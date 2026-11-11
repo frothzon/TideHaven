@@ -560,6 +560,7 @@
     {"id":{"name":"spr_shop","path":"sprites/spr_shop/spr_shop.yy",},},
     {"id":{"name":"spr_sign","path":"sprites/spr_sign/spr_sign.yy",},},
     {"id":{"name":"spr_skill_icon","path":"sprites/spr_skill_icon/spr_skill_icon.yy",},},
+    {"id":{"name":"spr_skill_symbols","path":"sprites/spr_skill_symbols/spr_skill_symbols.yy",},},
     {"id":{"name":"spr_soil","path":"sprites/spr_soil/spr_soil.yy",},},
     {"id":{"name":"spr_spider_attack_down","path":"sprites/spr_spider_attack_down/spr_spider_attack_down.yy",},},
     {"id":{"name":"spr_spider_attack_left","path":"sprites/spr_spider_attack_left/spr_spider_attack_left.yy",},},

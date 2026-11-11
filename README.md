@@ -33,7 +33,9 @@ House templates capture placed floor, wall, and soil pieces within 128 pixels. U
 
 ## Skill tree art
 
-The nine implemented skill nodes have individual pixel-art icons from a 3×3 sheet in `art/generated/skill-icons-sheet.png`, imported into the `spr_skill_icon` GameMaker sprite and cropped by the skill renderer. The other 16 nodes are still placeholders and have no assigned icons.
+The original three-frame, 64×64 skill-node button sprite is restored as `spr_skill_icon` and supplies normal, hover, and pressed states. Nine implemented skills have individual pixel-art symbols from the 3×3 sheet in `art/generated/skill-icons-sheet.png`, imported into `spr_skill_symbols` and cropped by the skill renderer. The other 16 nodes remain generic placeholders with no assigned symbols.
+
+The original `spr_gear` sprite is also restored with all 37 frames from the downloaded source project. New game art should preserve these resource identities and frame data when possible; use separate resources for replacement or generated art.
 
 ## Saves
 

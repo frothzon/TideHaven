@@ -81,9 +81,9 @@ function Skill(_name, _image, _x, _y, _locked=1, _start=0, _max=1) constructor{
 		draw_sprite_stretched_ext(self.image, _frame, _xx, _yy, self.w, self.h, self.locked ? c_white : self.color, 1);
 		var _name_x = x1;
 		if(self.icon_index >= 0 && self.icon_index < 9){
-			// The dedicated sprite is a transparent 3x3 sheet, one icon per active skill.
-			var _sheet_w = sprite_get_width(spr_skill_icon);
-			var _sheet_h = sprite_get_height(spr_skill_icon);
+			// The dedicated symbol sprite is a transparent 3x3 sheet, one icon per active skill.
+			var _sheet_w = sprite_get_width(spr_skill_symbols);
+			var _sheet_h = sprite_get_height(spr_skill_symbols);
 			var _col = self.icon_index mod 3;
 			var _row = floor(self.icon_index / 3);
 			var _src_x = floor(_col * _sheet_w / 3);
@@ -92,7 +92,7 @@ function Skill(_name, _image, _x, _y, _locked=1, _start=0, _max=1) constructor{
 			var _src_h = floor((_row + 1) * _sheet_h / 3) - _src_y;
 			var _icon_tint = self.locked ? c_ltgray : c_white;
 			var _icon_alpha = self.locked ? 0.85 : 1;
-			draw_sprite_part_ext(spr_skill_icon, 0, _src_x, _src_y, _src_w, _src_h, _xx + 1, _yy + 19, 26 / _src_w, 26 / _src_h, _icon_tint, _icon_alpha);
+			draw_sprite_part_ext(spr_skill_symbols, 0, _src_x, _src_y, _src_w, _src_h, _xx + 1, _yy + 19, 26 / _src_w, 26 / _src_h, _icon_tint, _icon_alpha);
 			_name_x = _xx + 54;
 		}
 		

@@ -1,8 +1,7 @@
+Tidehaven implementation backlog
 
-1. Items
-	- Bottles
-	- Axe
-	- Sword
-2. Build first area
-3. Build first dungeon
-4. Build first shrine
+The current baseline, feature status, implementation order, and acceptance criteria are maintained in:
+notes/TIdehaven TODO/TIdehaven TODO.txt
+
+Completed milestone: unified menu state, checked in GameMaker IDE.
+Next milestone: complete item progression, bottles, and simple fishing.

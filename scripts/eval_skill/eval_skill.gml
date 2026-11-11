@@ -1,14 +1,6 @@
 // Script assets have changed for v2.3.0 see
 // https://help.yoyogames.com/hc/en-us/articles/360005277377 for more information
 function eval_skill(){
-	if(keyboard_check_pressed(ord("B"))){
-		show_skills = !show_skills;
-		if(show_skills){
-			instance_deactivate_object(obj_player_bag);
-		} else {
-			instance_activate_object(obj_player_bag);
-		}
-	}
 	var skill_desc = "";
 	var _dw = display_get_gui_width();
 	var _dh = display_get_gui_height();

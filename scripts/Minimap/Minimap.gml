@@ -47,13 +47,13 @@ function Minimap() constructor{
 		}
 	};
 	
-	static draw = function(sprite_bg, sprite_cell, xto, yto, width, height){
+	static draw = function(sprite_bg, sprite_cell, xto, yto, width, height, enabled = true){
 		if(!self.show){
 			self.alpha = lerp(self.alpha, 0, 0.25);
 		} else {
 			self.alpha = lerp(self.alpha, self.alpha_max, 0.25);
 		}
-		if(self.alpha <= 0){
+		if(self.alpha <= 0 || !enabled){
 			return;	
 		}
 		if(!surface_exists(self.surf)){

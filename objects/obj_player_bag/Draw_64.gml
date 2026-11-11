@@ -1,6 +1,6 @@
 /// @description draw bags
 
-if(GAME_PAUSED) exit;
+if(GAME_PAUSED || MENU_VIEW == MENU_VIEW_MAP || MENU_VIEW == MENU_VIEW_SKILLS) exit;
 
 
 /// draw tabs
@@ -21,14 +21,14 @@ scr_draw_gear_gui(PLAYER_GEAR, PLAYER_BAG_ITEMS);
 scr_draw_dragger();
 
 /// Draw PAUSED text in GUI layer
-if(BAG_PAUSED){
+if(MENU_VIEW == MENU_VIEW_INVENTORY){
 	draw_set_font(fnt_hud_big);
 	draw_set_halign(fa_middle);
 	draw_text_transformed_color(
-		display_get_gui_width()*0.5, 34, "PAUSED", 4, 4, scr_wave(-15, 15, 2, 0), c_black,c_black,c_black,c_black,1
+		display_get_gui_width()*0.5, 34, "INVENTORY", 4, 4, scr_wave(-15, 15, 2, 0), c_black,c_black,c_black,c_black,1
 	);
 	draw_text_transformed_color(
-		display_get_gui_width()*0.5, 32, "PAUSED", 4, 4, scr_wave(-15, 15, 2, 0), c_yellow,c_yellow,c_orange,c_orange,1
+		display_get_gui_width()*0.5, 32, "INVENTORY", 4, 4, scr_wave(-15, 15, 2, 0), c_yellow,c_yellow,c_orange,c_orange,1
 	);
 	scr_draw_reset();
 }

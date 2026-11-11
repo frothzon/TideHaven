@@ -1,16 +1,25 @@
+Tidehaven update baseline
 
-[done] Smooth HP bar transitions
-[done] Energy Bar + energy cost for tools
-Fishing mechanism - no fancy minigame
-Level Up Sequence
-Second level of perlin noise for biome diversity
-Menu State Machine + buttons
-	we have map, inventory, and skill tree that need displayed
-Template editor for housing?
-	I want to be able to make custom dwellings for the inhabitants
-	and that will require modifying the terrain, and placing blocks
-	(being able to load and save it would be nice... basically a csv with object indexes)
-Ability to place special pathing over the water (like forager)
-	only able to place it where there is wall, it removes wall from tile
-	and places the wall back once it is destroyed
-Skill Tree Prettifying
+This is a static code inventory, not a completed gameplay walkthrough. Git baseline: acdc53c.
+
+Already present in the project
+- Health and energy bars are drawn. Tool actions consume stamina and stamina regenerates.
+- XP, level-ups, skill points, and a skill tree are implemented in code; they need integrated playthrough checks.
+- Inventory, equipment, recipe tabs, and a minimap exist. The unified menu state is implemented: P opens inventory, M opens the world map, B opens skills, and Escape returns to gameplay. The views are exclusive and pause gameplay.
+- The Perlin world, resource/enemy spawning, and basic wall/floor/soil construction are present.
+- A dungeon layout generator exists, but there is no playable dungeon or shrine room in the current room list.
+- Fish exists as a healing item, but the current code has no fishing interaction.
+- Save/load helper functions exist, but no call sites were found; persistent progression and world building are not established.
+
+Implementation order
+1. [done 2026-11-11] Unify the inventory, map, skills, pause, and dialogue flow so only the intended view owns input and gameplay pauses consistently. Verified in GameMaker IDE: build/run succeeded; inventory, map, and skills opened exclusively and Escape resumed gameplay.
+2. Complete the basic item loop: make axe and sword progression real, add bottles, and implement simple fishing without a minigame. Connect XP rewards to usable skill choices.
+3. Build one guided starting area, one short playable dungeon, and one shrine with a reward and return path. Reuse the existing dungeon-layout generator where it fits.
+4. Add an independent biome-noise layer with biome-specific ground, resources, and spawns. The current world setup copies one grid into its other grid slots.
+5. Add a placeable water path/bridge that records and restores replaced tiles, then build a housing-template editor on the same placement and save system. Store stable resource IDs in templates rather than transient object indexes.
+
+Acceptance
+- A new save can gather resources, use inventory and skills, reach the dungeon, earn the shrine reward, and return without a softlock.
+- [verified 2026-11-11] Menus do not overlap; gameplay pauses while a menu is open and resumes with Escape.
+- Saving and loading preserves the world seed, player progress, inventory, skills, and placed structures.
+- The project compiles and the guided slice can be completed from a fresh save.

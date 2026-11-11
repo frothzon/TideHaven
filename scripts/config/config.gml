@@ -68,6 +68,7 @@ function config(){
 		slot_hover: -1,
 		slot_selection: -1,
 		paused: false,
+		menu_view: 0,
 		item_slots: -1,
 		tab_slots: -1,
 		gear_select: 0,
@@ -187,6 +188,11 @@ function config(){
 #macro BAG_SLOT_HOVER global.CONTROLLER.slot_hover
 #macro BAG_SLOT_SELECT global.CONTROLLER.slot_selection
 #macro BAG_PAUSED global.CONTROLLER.paused
+#macro MENU_VIEW global.CONTROLLER.menu_view
+#macro MENU_VIEW_GAME 0
+#macro MENU_VIEW_INVENTORY 1
+#macro MENU_VIEW_MAP 2
+#macro MENU_VIEW_SKILLS 3
 #macro BAG_ITEM_SLOTS global.CONTROLLER.item_slots
 #macro BAG_TAB_SLOTS global.CONTROLLER.tab_slots
 #macro BAG_TAB_COUNT global.CONTROLLER.tab_count

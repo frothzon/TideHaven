@@ -3,5 +3,5 @@ Tidehaven implementation backlog
 The current baseline, feature status, implementation order, and acceptance criteria are maintained in:
 notes/TIdehaven TODO/TIdehaven TODO.txt
 
-Completed milestone: unified menu state, checked in GameMaker IDE.
-Next milestone: complete item progression, bottles, and simple fishing.
+Completed milestones: unified menu state; starter tools, healing potions, simple fishing, and sword chest progression. Checked in GameMaker IDE.
+Next milestone: build a guided starting region, short playable dungeon, shrine reward, and return path.

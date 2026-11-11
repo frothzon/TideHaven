@@ -13,7 +13,11 @@ Already present in the project
 
 Implementation order
 1. [done 2026-11-11] Unify the inventory, map, skills, pause, and dialogue flow so only the intended view owns input and gameplay pauses consistently. Verified in GameMaker IDE: build/run succeeded; inventory, map, and skills opened exclusively and Escape resumed gameplay.
-2. Complete the basic item loop: make axe and sword progression real, add bottles, and implement simple fishing without a minigame. Connect XP rewards to usable skill choices.
+2. [done 2026-11-11] Complete the basic item loop: make axe and sword progression real, add healing potions, and implement simple fishing without a minigame. XP awards and skill choices were already connected.
+   - New saves start with visible pickaxe, shovel, axe, fishing rod, two healing potions, three carrot seeds, and the basic floor/wall/soil recipes.
+   - Fishing works from the inventory while facing water, costs stamina, waits two seconds between casts, and has a 65% chance to add a fish.
+   - Chests now appear rarely in the world; each new world also searches nearby land for a guaranteed Wooden Sword chest. Sword attacks target fleshy enemies.
+   - Verified in GameMaker IDE: build/run succeeded, potion use removed one potion, and shoreline fishing spent stamina and awarded a fish. Existing `spr_gear` is transparent, so tool and potion icons use available art from `spr_bag_items` and `spr_stick`.
 3. Build one guided starting area, one short playable dungeon, and one shrine with a reward and return path. Reuse the existing dungeon-layout generator where it fits.
 4. Add an independent biome-noise layer with biome-specific ground, resources, and spawns. The current world setup copies one grid into its other grid slots.
 5. Add a placeable water path/bridge that records and restores replaced tiles, then build a housing-template editor on the same placement and save system. Store stable resource IDs in templates rather than transient object indexes.
@@ -22,4 +26,4 @@ Acceptance
 - A new save can gather resources, use inventory and skills, reach the dungeon, earn the shrine reward, and return without a softlock.
 - [verified 2026-11-11] Menus do not overlap; gameplay pauses while a menu is open and resumes with Escape.
 - Saving and loading preserves the world seed, player progress, inventory, skills, and placed structures.
-- The project compiles and the guided slice can be completed from a fresh save.
+- [verified 2026-11-11] The project compiles and starts in the GameMaker IDE after the item-loop changes. The guided slice is still pending.

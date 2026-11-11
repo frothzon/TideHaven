@@ -11,8 +11,8 @@ scr_gen_terrain(0);
 
 scr_shuffle_array(position_list);
 
-spawn_weight = [25, 15, 5, 1];
-spawn_objects = [obj_bush, obj_tree, obj_rock, obj_monster_parent];
+spawn_weight = [25, 15, 5, 1, 2];
+spawn_objects = [obj_bush, obj_tree, obj_rock, obj_monster_parent, obj_chest];
 alarm[0] = room_speed * 5;
 
 position_index = 0;

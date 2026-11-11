@@ -27,6 +27,11 @@ switch(tool_type){
 	case _TOOL_.axe:
 		mask = _MASK_.wooden;
 	break;
+	case _TOOL_.sword:
+		mask = _MASK_.fleshy;
+		rotate_default = 45;
+		rotate_swing = -110;
+	break;
 }
 
 rotation = lerp(rotation, rotate_default, 0.1);

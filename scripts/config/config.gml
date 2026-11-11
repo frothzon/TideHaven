@@ -85,6 +85,7 @@ function config(){
 		mat_berries: new scr_item_class("Berries", spr_items, 56, statscript_potion, new scr_stats_class(10, 0, 0), "Heals 10 HP"),
 		mat_meat: new scr_item_class("Meat", spr_items, 10, statscript_potion, new scr_stats_class(5, 0, 0), "Heals 5 HP"),
 		mat_fish: new scr_item_class("Fish", spr_items, 58, statscript_potion, new scr_stats_class(25, 0, 0), "Heals 25 HP"),
+		mat_potion: new scr_item_class("Healing Potion", spr_bag_items, 18, statscript_potion, new scr_stats_class(10, 0, 0), "Restores 10 HP"),
 		
 		/// key
 		item_key: new scr_item_class("Key", spr_key, 0),
@@ -215,6 +216,7 @@ function config(){
 #macro MAT_BERRY global.CONTROLLER.mat_berries
 #macro MAT_MEAT global.CONTROLLER.mat_meat
 #macro MAT_FISH global.CONTROLLER.mat_fish
+#macro MAT_POTION global.CONTROLLER.mat_potion
 
 //-------------- misc items --------------//
 #macro ITEM_KEY global.CONTROLLER.item_key
@@ -250,6 +252,51 @@ function scr_load_config(ind){
 		var decrypted = base64_decode(load_data);
 		global.CONFIG = json_parse(decrypted);
 	}
+}
+
+/// Use a fishing rod while facing a water tile. Fishing is a short stamina action with no minigame.
+function scr_use_fishing_rod(item, bag){
+	if(GAME_PAUSED) return false;
+	var _player = instance_find(obj_player, 0);
+	if(!scr_check_instance(_player)) return false;
+	if(_player.fishing_cooldown > 0){
+		scr_show_text_float(_player.x, _player.y - 20, "Wait for another bite", c_aqua);
+		return false;
+	}
+	if(_player.stamina.value < 1){
+		scr_show_text_float(_player.x, _player.y - 20, "Too tired to fish", c_white);
+		return false;
+	}
+	var _sand_layer = layer_get_id("lay_sand");
+	var _wall_layer = layer_get_id("lay_walls");
+	if(_sand_layer < 0 || _wall_layer < 0) return false;
+	var _sand_map = layer_tilemap_get_id(_sand_layer);
+	var _wall_map = layer_tilemap_get_id(_wall_layer);
+	var _cast_x = _player.x;
+	var _cast_y = _player.y;
+	var _range = 48;
+	switch(_player.sprite_selection){
+		case 0: _cast_x += _range; break;
+		case 1: _cast_y -= _range; break;
+		case 2: _cast_x -= _range; break;
+		case 3: _cast_y += _range; break;
+	}
+	var _is_water = tilemap_get_at_pixel(_sand_map, _cast_x, _cast_y) <= 0
+		&& tilemap_get_at_pixel(_wall_map, _cast_x, _cast_y) > 0;
+	if(!_is_water){
+		scr_show_text_float(_player.x, _player.y - 20, "Face the water to fish", c_aqua);
+		return false;
+	}
+	_player.stamina.add(-1);
+	_player.fishing_cooldown = room_speed * 2;
+	if(random(1) < 0.65){
+		scr_bag_add_item(bag, MAT_FISH, 1);
+		scr_show_text_float(_player.x, _player.y - 20, "Fish caught!", c_aqua);
+		scr_play_sound(snd_collect, 0);
+	} else {
+		scr_show_text_float(_player.x, _player.y - 20, "No bite this time", c_white);
+	}
+	return false;
 }
 
 /// play a sound effect

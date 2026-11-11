@@ -58,25 +58,16 @@ function scr_setup_test_bag(){
 	equip_chest = scr_generate_equip_function(PLAYER_BAG_ITEMS, PLAYER_GEAR, 3);
 	equip_weapon = scr_generate_equip_function(PLAYER_BAG_ITEMS, PLAYER_GEAR, 4);
 
-	repeat(3){
-		scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_gear_class("Worn Boots", spr_items_boots, 0, equip_boots, -1,random(0.1)+0.1,"speed"), 1, 1);
-	}
-	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_gear_class("Rusty Shield", spr_items_shield, 0, equip_shield, -1,1,"damage"), 1, 1);
-	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_gear_class("Iron Helm", spr_items_helm, 0, equip_helm, -1,2,"life"), 1, 1);
-	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_gear_class("Chest Plate", spr_items_chest, 0, equip_chest, -1,3,"life"), 1, 1);
-	
-	/// add pickaxe to bag
-	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_tool_class("Iron Pickaxe", spr_gear, 5, _TOOL_.pickaxe, equip_weapon, -1, 1, "damage"), 1, 1);
-	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_tool_class("Iron Shovel", spr_gear, 0, _TOOL_.shovel, equip_weapon, -1, 1, "damage"), 1, 1);
-	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_tool_class("Iron Axe", spr_gear, 15, _TOOL_.axe, equip_weapon, -1, 1, "damage"), 1, 1);
-	
+	/// Core tools and provisions for a new save.
+	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_tool_class("Iron Pickaxe", spr_bag_items, 14, _TOOL_.pickaxe, equip_weapon, -1, 1, "damage"), 1, 1);
+	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_tool_class("Iron Shovel", spr_bag_items, 26, _TOOL_.shovel, equip_weapon, -1, 1, "damage"), 1, 1);
+	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_tool_class("Iron Axe", spr_bag_items, 2, _TOOL_.axe, equip_weapon, -1, 1, "damage"), 1, 1);
+	scr_bag_add_item(PLAYER_BAG_ITEMS, new scr_item_class("Fishing Rod", spr_stick, 0, scr_use_fishing_rod, -1, "Use while facing water to fish"), 1, 1);
+	scr_bag_add_item(PLAYER_BAG_ITEMS, MAT_POTION, 2, 1);
 	
 	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_FLOOR_GRASS, 1, 1);
-	show_debug_message(RECIPE_FLOOR_GRASS);
 	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_WALL_GRASS, 1, 1);
-	show_debug_message(RECIPE_WALL_GRASS);
 	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_FLOOR_SOIL, 1, 1);
-	show_debug_message(RECIPE_FLOOR_SOIL);
 	
-	scr_bag_add_item(PLAYER_BAG_ITEMS, global.CONTROLLER.seed_carrot, 10, 1);
+	scr_bag_add_item(PLAYER_BAG_ITEMS, global.CONTROLLER.seed_carrot, 3, 1);
 }

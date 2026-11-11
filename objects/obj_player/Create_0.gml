@@ -54,6 +54,7 @@ is_climbing = false;
 held_shield = false;
 full_screen = 0;
 regen_timer = 0;
+fishing_cooldown = 0;
 
 /// deactivating objects not in view
 alarm[0] = 1;

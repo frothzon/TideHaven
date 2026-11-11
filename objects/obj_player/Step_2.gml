@@ -2,6 +2,7 @@
 
 scr_cam_update(CAMERA);
 scr_update_tooltip(TOOLTIPS);
+if(fishing_cooldown > 0) fishing_cooldown--;
 
 /// One menu view owns the controls at a time. P: inventory, M: world map, B: skills.
 if(!GAME_PAUSED){

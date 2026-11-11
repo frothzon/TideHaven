@@ -10,7 +10,8 @@ function setup_skills(){
 		var last = -1;
 		for(var j = 0; j < 5; j++){
 			var yy = 80 * j;
-			var n1 = new Skill($"Skill {ind}", spr_skill_icon, xx, yy, !(j==0), 0, 5);
+			// Use the inventory slot skin until a dedicated skill-node sprite is available.
+			var n1 = new Skill($"Skill {ind}", spr_inv_slot, xx, yy, !(j==0), 0, 5);
 			n1.import(SKILL_DATA[ind]);
 			if(last != -1){
 				last.add_child(n1);	

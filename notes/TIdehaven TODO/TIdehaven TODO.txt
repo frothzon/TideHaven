@@ -18,12 +18,21 @@ Implementation order
    - Fishing works from the inventory while facing water, costs stamina, waits two seconds between casts, and has a 65% chance to add a fish.
    - Chests now appear rarely in the world; each new world also searches nearby land for a guaranteed Wooden Sword chest. Sword attacks target fleshy enemies.
    - Verified in GameMaker IDE: build/run succeeded, potion use removed one potion, and shoreline fishing spent stamina and awarded a fish. Existing `spr_gear` is transparent, so tool and potion icons use available art from `spr_bag_items` and `spr_stick`.
-3. Build one guided starting area, one short playable dungeon, and one shrine with a reward and return path. Reuse the existing dungeon-layout generator where it fits.
-4. Add an independent biome-noise layer with biome-specific ground, resources, and spawns. The current world setup copies one grid into its other grid slots.
-5. Add a placeable water path/bridge that records and restores replaced tiles, then build a housing-template editor on the same placement and save system. Store stable resource IDs in templates rather than transient object indexes.
+3. Audit and recover missing artwork before making replacements. Compare the current project with its pre-change source and Git history by resource name, frame, and file; identify transparent or missing sprite frames and broken references. Restore exact source art where it exists, then use the GPT-Tools Spriter workflow for gaps that have no recoverable original.
+   - Initial source comparison: all 121 sprite resource names in the pre-change project are still present; TideHaven has 84 additional sprite resources. The older project is a useful reference but does not contain extra sprite resources to copy wholesale.
+   - GameMaker frame/layer audit: all 1,907 referenced sprite frames have their layer PNGs. Five referenced frames are fully transparent: the last frame of `spr_effect_bolt`, the only frame of `spr_gear`, the last frame of `spr_lock`, the only frame of `spr_skill_icon`, and the last frame of `spr_whack`. The first, third, and fifth are terminal animation frames; `spr_gear` is not used by active code, and starter tools use `spr_bag_items`.
+   - The blank `spr_skill_icon` was used by all 25 skill nodes. The pre-change project has no corresponding sprite to recover, so the nodes now use the existing `spr_inv_slot` art; GameMaker IDE build/run showed the full tree with visible node backgrounds. Dedicated skill artwork remains a polish item. Do not copy unrelated transparent root-level PNG exports into the project.
+   - The local OneDrive mirror is cloud-only while its provider is off, so it was not available as an additional recovery source during this audit.
+4. Establish versioned save/load for the world seed, player position and stats, inventory, gear, skills, room changes, and placed structures. Add a safe migration path for existing saves before introducing more persistent content.
+5. Build one guided starting area, one short playable dungeon, and one shrine with a reward and return path. Reuse the existing dungeon-layout generator where it fits, and preserve the player state across the trip.
+6. Add an independent biome-noise layer with biome-specific ground, resources, and spawns. The current world setup copies one grid into its other grid slots.
+7. Add a placeable water path/bridge that records and restores replaced tiles, then build a housing-template editor on the same placement and save system. Store stable resource IDs in templates rather than transient object indexes.
+8. Polish the restored art across menus, items, characters, creatures, and world tiles; add replacement art only for gaps that cannot be recovered. Finish with a documented GameMaker build and a full new-save playthrough.
 
 Acceptance
 - A new save can gather resources, use inventory and skills, reach the dungeon, earn the shrine reward, and return without a softlock.
 - [verified 2026-11-11] Menus do not overlap; gameplay pauses while a menu is open and resumes with Escape.
-- Saving and loading preserves the world seed, player progress, inventory, skills, and placed structures.
+- Saving and loading preserves the world seed, player progress, inventory, skills, room changes, and placed structures; existing saves migrate without losing progress.
 - [verified 2026-11-11] The project compiles and starts in the GameMaker IDE after the item-loop changes. The guided slice is still pending.
+- Recovered art uses the original GameMaker resource identities where possible, and no required sprite frame or asset reference is silently blank or missing.
+- The project opens, builds, and completes a new-save route from the starting area through the shrine reward and back without a softlock.

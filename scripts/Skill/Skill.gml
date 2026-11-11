@@ -75,7 +75,9 @@ function Skill(_name, _image, _x, _y, _locked=1, _start=0, _max=1) constructor{
 			draw_line_width(x1,y1,x2,y2,2);
 		}
 		
-		draw_sprite_stretched_ext(self.image, _state, _xx, _yy, self.w, self.h, self.locked ? c_white : self.color, 1);
+		// Clamp pressed state to the last frame so two-state node art stays valid.
+		var _frame = clamp(_state, 0, sprite_get_number(self.image) - 1);
+		draw_sprite_stretched_ext(self.image, _frame, _xx, _yy, self.w, self.h, self.locked ? c_white : self.color, 1);
 		
 		draw_set_font(font);
 		draw_set_halign(fa_center);

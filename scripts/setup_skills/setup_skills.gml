@@ -21,6 +21,9 @@ function setup_skills(){
 			ind++;
 		}
 	}
+	for(var icon_i = 0; icon_i < 9; icon_i++){
+		skill_nodes[icon_i].icon_index = icon_i;
+	}
 	show_skills = false;
 	
 	/// set up individual nodes and skills

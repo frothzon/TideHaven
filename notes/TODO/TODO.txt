@@ -3,4 +3,4 @@ Tidehaven implementation backlog
 The current baseline, feature status, implementation order, and acceptance criteria are maintained in:
 notes/TIdehaven TODO/TIdehaven TODO.txt
 
-Completed and build-checked milestones: unified menus, starter item progression, visible skill tree, versioned saves, guided cave/shrine scene, independent terrain biomes, and the bridge/house-template implementation. The cave route and bridge/template interactions still need playthrough checks. See `notes/TIdehaven TODO/TIdehaven TODO.txt` for the detailed status and acceptance criteria.
+Completed and build-checked milestones: unified menus, starter item progression, skill icons for the nine implemented skills, versioned saves, guided cave/shrine scene, independent terrain biomes, and the bridge/house-template implementation. The cave route and bridge/template interactions still need playthrough checks. See `notes/TIdehaven TODO/TIdehaven TODO.txt` for the detailed status and acceptance criteria.

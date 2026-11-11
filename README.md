@@ -8,7 +8,7 @@ TideHaven is a GameMaker Studio 2 project. Open `tidehaven.yyp` in the GameMaker
 2. Choose **Build → Run** or press **F5**.
 3. Check the IDE's **Output** and **Compile Errors** panes if the build fails.
 
-The project was last built and launched on **2026-11-11** in GameMaker IDE **2024.14.4.222** with Runtime **2024.14.4.268**. The guided-start dialogue, biome terrain, and the new bridge/template code all compile and launch in the Runner. Bridge and template placement behavior and the full cave reward-and-return route still need playthrough checks.
+The project was last built and launched on **2026-11-11** in GameMaker IDE **2024.14.4.222** with Runtime **2024.14.4.268**. The guided-start dialogue, biome terrain, bridge/template code, and skill-tree icons compile and launch in the Runner. Bridge and template placement behavior and the full cave reward-and-return route still need playthrough checks.
 
 ## Controls
 
@@ -31,6 +31,10 @@ The starter recipe list includes a Water Bridge recipe (3 wood and 1 rock). Exis
 
 House templates capture placed floor, wall, and soil pieces within 128 pixels. Up to 12 templates are kept in the versioned save. Placement checks for land, collisions, and the required materials, then saves the placed pieces with the room state. These interactions compile and launch, but still need in-game verification.
 
+## Skill tree art
+
+The nine implemented skill nodes have individual pixel-art icons from a 3×3 sheet in `art/generated/skill-icons-sheet.png`, imported into the `spr_skill_icon` GameMaker sprite and cropped by the skill renderer. The other 16 nodes are still placeholders and have no assigned icons.
+
 ## Saves
 
 The current save format is versioned JSON (`TideHavenSave.json`) with a `.bak` recovery copy. The game can also migrate progression from the older `save.dat` INI/base64 format. GameMaker resolves these filenames in the Runner's working directory, which can differ between IDE and exported builds.
@@ -40,6 +44,7 @@ The current save format is versioned JSON (`TideHavenSave.json`) with a `.bak` r
 - `objects/` — gameplay objects and event code
 - `scripts/` — shared systems, world generation, items, UI, and saves
 - `rooms/` — GameMaker rooms
+- `art/generated/` — source PNGs for generated replacement art
 - `sprites/`, `tilesets/`, `fonts/`, `sounds/` — game art and audio resources
 - `notes/` — implementation backlog and project status
 

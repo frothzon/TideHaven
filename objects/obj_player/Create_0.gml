@@ -77,4 +77,7 @@ setup_skills();
 /// setup minimap
 map = new Minimap();
 
+/// Restore the saved spawn point after all movement and map state is initialized.
+scr_apply_pending_player(id);
+
 /// static build = function(layer_names, map_w, map_h, px, py)

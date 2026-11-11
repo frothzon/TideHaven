@@ -5,6 +5,11 @@ scr_update_tooltip(TOOLTIPS);
 if(fishing_cooldown > 0) fishing_cooldown--;
 
 /// One menu view owns the controls at a time. P: inventory, M: world map, B: skills.
+if(keyboard_check(vk_control) && keyboard_check_pressed(ord("S"))){
+	scr_roomEndSaveState();
+	if(scr_save_game()) scr_show_text_float(x, y - 20, "Game saved", c_lime);
+}
+
 if(!GAME_PAUSED){
 	var _next_view = MENU_VIEW;
 	if(keyboard_check_pressed(vk_escape) && MENU_VIEW != MENU_VIEW_GAME){

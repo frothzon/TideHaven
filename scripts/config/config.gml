@@ -41,6 +41,7 @@ function config(){
 		world_data: scr_create_dungeon(),
 		world_index: 0,
 		world_objects: [],
+		world_snapshot_saved: [],
 		creature_list: scr_gen_seed_array(),
 		skill_data: array_create(26, -1),
 		player_stats: {life:-1,damage:-1,spd:-1},
@@ -134,6 +135,9 @@ function config(){
 	//==================================== Seed creation ==========================================================================//
 	// carrot seeds
 	global.CONTROLLER.seed_carrot = new scr_seed_class("Carrot Seed", scr_build_plant_data("Carrot Plant", 60, spr_carrot, global.CONTROLLER.food_carrot, [1,1]), 0);
+
+	// Load only after the controller's item registry and world graph are ready.
+	scr_load_game();
 	
 }
 /// express global vars as macros for easy access
@@ -145,6 +149,7 @@ function config(){
 #macro KEY_EQUIP global.CONFIG.equip
 #macro KEY_FORCE global.CONFIG.force
 #macro SAVE_FILE "save.dat"
+#macro SAVE_V2_FILE "TideHavenSave.json"
 #macro MUSIC_VOL global.CONFIG.music_volume
 #macro SOUND_VOL global.config.sound_volume
 #macro MUSIC_EMIT global.CONTROLLER.MUSemitter
@@ -158,6 +163,7 @@ function config(){
 #macro WORLD_SEEDS global.CONFIG.world_seeds
 #macro WORLD_INDEX global.CONFIG.world_index
 #macro WORLD_OBJECTS global.CONFIG.world_objects
+#macro WORLD_SNAPSHOT_SAVED global.CONFIG.world_snapshot_saved
 #macro WORLD_SAVELIST global.CONTROLLER.savable_objects
 #macro WORLD_READY global.CONTROLLER.world_ready
 #macro CREATURE_SEEDS global.CONFIG.creature_list
@@ -234,24 +240,330 @@ function config(){
 /*
 	======================================= Functions =========================================
 */
-/// save config file
-function scr_save_config(ind){
-	var str = json_stringify(global.CONFIG);
-	var encrypted = base64_encode(str);
-	ini_open(SAVE_FILE);
-	ini_write_string("Config", string(ind), encrypted);
-	ini_close();
+/// Convert an item to a data-only record. Runtime methods and references are rebuilt on load.
+function scr_save_item(_item){
+	if(!is_struct(_item)) return -1;
+	var _sprite_name = "";
+	if(variable_struct_exists(_item, "sprite") && is_real(_item.sprite) && _item.sprite >= 0){
+		_sprite_name = sprite_get_name(_item.sprite);
+	}
+	var _record = {
+		name: variable_struct_exists(_item, "name") ? _item.name : "",
+		type: variable_struct_exists(_item, "type") ? _item.type : ITEM_TYPE.material,
+		sprite_name: _sprite_name,
+		index: variable_struct_exists(_item, "index") ? _item.index : 0,
+		id: variable_struct_exists(_item, "id") ? _item.id : "",
+		data: -1,
+		data_type: variable_struct_exists(_item, "data_type") ? _item.data_type : "",
+		tool_type: variable_struct_exists(_item, "tool_type") ? _item.tool_type : -1,
+		seed: variable_struct_exists(_item, "seed") ? _item.seed : -1
+	};
+	if(_record.type == ITEM_TYPE.bag || _record.type == ITEM_TYPE.tool){
+		if(variable_struct_exists(_item, "data") && (is_real(_item.data) || is_string(_item.data) || is_array(_item.data))){
+			_record.data = _item.data;
+		}
+	}
+	return _record;
 }
 
-/// load a previously saved config file
-function scr_load_config(ind){
-	ini_open(SAVE_FILE);
-	var load_data = ini_read_string("Config",string(ind), "");
-	ini_close();
-	if(load_data != ""){
-		var decrypted = base64_decode(load_data);
-		global.CONFIG = json_parse(decrypted);
+function scr_save_bag(_bag){
+	var _items = [];
+	var _amounts = [];
+	var _count = array_length(_bag.items);
+	for(var i = 0; i < _count; i++){
+		_items[i] = scr_save_item(_bag.items[i]);
+		_amounts[i] = _bag.amount[i];
 	}
+	return {name: _bag.name, resizable: _bag.resizable, items: _items, amount: _amounts};
+}
+
+function scr_convert_legacy_bag(_bag){
+	if(!is_struct(_bag) || !variable_struct_exists(_bag, "items") || !is_array(_bag.items)) return -1;
+	var _items = [];
+	var _amounts = [];
+	for(var i = 0; i < array_length(_bag.items); i++){
+		_items[i] = scr_save_item(_bag.items[i]);
+		_amounts[i] = is_array(_bag.amount) && i < array_length(_bag.amount) ? _bag.amount[i] : 0;
+	}
+	return {name: variable_struct_exists(_bag, "name") ? _bag.name : "Items", resizable: variable_struct_exists(_bag, "resizable") ? _bag.resizable : false, items: _items, amount: _amounts};
+}
+
+function scr_save_room_data(){
+	var _rooms = [];
+	var _room_count = array_length(WORLD_OBJECTS);
+	for(var r = 0; r < _room_count; r++){
+		_rooms[r] = [];
+		if(is_array(WORLD_OBJECTS[r])){
+			for(var i = 0; i < array_length(WORLD_OBJECTS[r]); i++){
+				var _entry = WORLD_OBJECTS[r][i];
+				if(is_struct(_entry) && variable_struct_exists(_entry, "object_name")){
+					_rooms[r][i] = _entry;
+				}
+			}
+		}
+	}
+	return _rooms;
+}
+
+function scr_save_world_graph(){
+	var _grid = WORLD_DATA.grid;
+	var _width = ds_grid_width(_grid);
+	var _height = ds_grid_height(_grid);
+	var _cells = [];
+	for(var _gy = 0; _gy < _height; _gy++){
+		for(var _gx = 0; _gx < _width; _gx++){
+			array_push(_cells, _grid[# _gx, _gy]);
+		}
+	}
+	return {
+		width: _width,
+		height: _height,
+		cells: _cells,
+		room_count: WORLD_DATA.room_count,
+		region_array: WORLD_DATA.region_array,
+		room_edge_array: WORLD_DATA.room_edge_array
+	};
+}
+
+function scr_save_game(){
+	var _player = instance_find(obj_player, 0);
+	var _bag_obj = instance_find(obj_player_bag, 0);
+	if(!scr_check_instance(_player) || !scr_check_instance(_bag_obj)) return false;
+
+	backup_stats();
+	var _bags = [];
+	for(var b = 0; b < array_length(_bag_obj.bag_list); b++){
+		_bags[b] = scr_save_bag(_bag_obj.bag_list[b]);
+	}
+	var _saved_gear = scr_save_bag(PLAYER_GEAR);
+	var _grid_save = scr_save_world_graph();
+	var _saved_world_ready = array_create(array_length(WORLD_SNAPSHOT_SAVED), false);
+	for(var w = 0; w < array_length(WORLD_SNAPSHOT_SAVED); w++) _saved_world_ready[w] = WORLD_SNAPSHOT_SAVED[w];
+	var _payload = {
+		version: 1,
+		world_seeds: WORLD_SEEDS,
+		creature_seeds: CREATURE_SEEDS,
+		world_index: WORLD_INDEX,
+		world_graph: _grid_save,
+		world_objects: scr_save_room_data(),
+		world_snapshot_saved: _saved_world_ready,
+		level: STAT_LEVEL,
+		level_points: STAT_POINTS,
+		exp_amount: STAT_EXP.export(),
+		exp_multiplier: EXP_MULT,
+		player_stats: STAT_DATA,
+		player_skills: PLAYER_SKILLS,
+		skill_data: SKILL_DATA,
+		item_id: BAG_ITEM_ID,
+		bag_index: _bag_obj.bag_index,
+		bags: _bags,
+		gear: _saved_gear,
+		player: {x: _player.x, y: _player.y, sprite_selection: _player.sprite_selection}
+	};
+	var _json = json_stringify(_payload);
+	var _temp_file = SAVE_V2_FILE + ".tmp";
+	var _file = file_text_open_write(_temp_file);
+	if(_file < 0) return false;
+	file_text_write_string(_file, _json);
+	file_text_close(_file);
+	var _backup_file = SAVE_V2_FILE + ".bak";
+	if(file_exists(_backup_file)) file_delete(_backup_file);
+	if(file_exists(SAVE_V2_FILE)) file_rename(SAVE_V2_FILE, _backup_file);
+	if(!file_rename(_temp_file, SAVE_V2_FILE)){
+		if(!file_exists(SAVE_V2_FILE) && file_exists(_backup_file)) file_rename(_backup_file, SAVE_V2_FILE);
+		return false;
+	}
+	show_debug_message("TideHaven save written.");
+	return true;
+}
+
+function scr_apply_saved_world_graph(_graph){
+	if(!is_struct(_graph) || !variable_struct_exists(_graph, "cells")) return;
+	var _width = min(ds_grid_width(WORLD_DATA.grid), _graph.width);
+	var _height = min(ds_grid_height(WORLD_DATA.grid), _graph.height);
+	for(var _gy = 0; _gy < _height; _gy++){
+		for(var _gx = 0; _gx < _width; _gx++){
+			var _index = _gy * _graph.width + _gx;
+			if(_index < array_length(_graph.cells)) WORLD_DATA.grid[# _gx, _gy] = _graph.cells[_index];
+		}
+	}
+	WORLD_DATA.room_count = _graph.room_count;
+	WORLD_DATA.region_array = _graph.region_array;
+	WORLD_DATA.room_edge_array = _graph.room_edge_array;
+}
+
+function scr_apply_saved_config(_data){
+	if(!is_struct(_data)) return false;
+	if(variable_struct_exists(_data, "world_seeds") && is_array(_data.world_seeds)) WORLD_SEEDS = _data.world_seeds;
+	if(variable_struct_exists(_data, "creature_seeds") && is_array(_data.creature_seeds)) CREATURE_SEEDS = _data.creature_seeds;
+	if(variable_struct_exists(_data, "world_index")) WORLD_INDEX = max(0, _data.world_index);
+	if(variable_struct_exists(_data, "world_graph")) scr_apply_saved_world_graph(_data.world_graph);
+	if(variable_struct_exists(_data, "world_objects") && is_array(_data.world_objects)) WORLD_OBJECTS = _data.world_objects;
+	if(variable_struct_exists(_data, "world_snapshot_saved") && is_array(_data.world_snapshot_saved)) WORLD_SNAPSHOT_SAVED = _data.world_snapshot_saved;
+	if(variable_struct_exists(_data, "level")) STAT_LEVEL = _data.level;
+	if(variable_struct_exists(_data, "level_points")) STAT_POINTS = _data.level_points;
+	if(variable_struct_exists(_data, "exp_amount") && is_struct(_data.exp_amount)) STAT_EXP.import(_data.exp_amount);
+	if(variable_struct_exists(_data, "exp_multiplier")) EXP_MULT = _data.exp_multiplier;
+	if(variable_struct_exists(_data, "player_stats") && is_struct(_data.player_stats)) STAT_DATA = _data.player_stats;
+	if(variable_struct_exists(_data, "player_skills") && is_struct(_data.player_skills)) PLAYER_SKILLS = _data.player_skills;
+	if(variable_struct_exists(_data, "skill_data") && is_array(_data.skill_data)) SKILL_DATA = _data.skill_data;
+	if(variable_struct_exists(_data, "item_id")) BAG_ITEM_ID = _data.item_id;
+	global.PENDING_SAVE = _data;
+	show_debug_message($"Loaded TideHaven save version {_data.version}.");
+	return true;
+}
+
+function scr_load_game(){
+	global.PENDING_SAVE = undefined;
+	var _loaded = false;
+	var _candidates = [SAVE_V2_FILE, SAVE_V2_FILE + ".bak"];
+	for(var i = 0; i < array_length(_candidates) && !_loaded; i++){
+		if(!file_exists(_candidates[i])) continue;
+		var _file = file_text_open_read(_candidates[i]);
+		if(_file < 0) continue;
+		var _json = file_text_read_string(_file);
+		file_text_close(_file);
+		try {
+			var _data = json_parse(_json);
+			if(is_struct(_data) && variable_struct_exists(_data, "version") && _data.version >= 1){
+				_loaded = scr_apply_saved_config(_data);
+			}
+		} catch (_error) {
+			show_debug_message("Could not read TideHaven save; trying recovery copy.");
+		}
+	}
+
+	// Migrate the former INI/base64 save without replacing it. Only fields that can be reconstructed safely are copied.
+	if(!_loaded && file_exists(SAVE_FILE)){
+		ini_open(SAVE_FILE);
+		var _legacy = ini_read_string("Config", "0", "");
+		ini_close();
+		if(_legacy != ""){
+			try {
+				var _old = json_parse(base64_decode(_legacy));
+				if(is_struct(_old)){
+					if(variable_struct_exists(_old, "world_seeds")) WORLD_SEEDS = _old.world_seeds;
+					if(variable_struct_exists(_old, "creature_list")) CREATURE_SEEDS = _old.creature_list;
+					if(variable_struct_exists(_old, "world_index")) WORLD_INDEX = max(0, _old.world_index);
+					if(variable_struct_exists(_old, "level")) STAT_LEVEL = _old.level;
+					if(variable_struct_exists(_old, "level_points")) STAT_POINTS = _old.level_points;
+					if(variable_struct_exists(_old, "exp_amount") && is_struct(_old.exp_amount)) STAT_EXP.import(_old.exp_amount);
+					if(variable_struct_exists(_old, "player_stats")) STAT_DATA = _old.player_stats;
+					if(variable_struct_exists(_old, "skill_data")) SKILL_DATA = _old.skill_data;
+					if(variable_struct_exists(_old, "player_skills")) PLAYER_SKILLS = _old.player_skills;
+					var _legacy_bags = array_create(2, -1);
+					if(variable_struct_exists(_old, "bag")){
+						var _legacy_bag = scr_convert_legacy_bag(_old.bag);
+						if(is_struct(_legacy_bag)){
+							var _bag_slot = _legacy_bag.name == "Recipes" ? 1 : 0;
+							_legacy_bags[_bag_slot] = _legacy_bag;
+						}
+					}
+					var _legacy_gear = variable_struct_exists(_old, "gear") ? scr_convert_legacy_bag(_old.gear) : -1;
+					global.PENDING_SAVE = {bags: _legacy_bags, gear: _legacy_gear, bag_index: 0, player: {x: INITIAL_LAND_SIZE/2, y: INITIAL_LAND_SIZE/2, sprite_selection: 3}};
+					_loaded = true;
+					show_debug_message("Migrated legacy TideHaven progression. Save once to create the new format.");
+				}
+			} catch (_error) {
+				show_debug_message("Legacy TideHaven save could not be migrated; starting with defaults.");
+			}
+		}
+	}
+	return _loaded;
+}
+
+function scr_load_item(_saved, _bag_obj){
+	if(!is_struct(_saved) || !variable_struct_exists(_saved, "name")) return -1;
+	var _known = [MAT_WOOD, MAT_LEAF, MAT_ROCK, MAT_GOLD, MAT_BERRY, MAT_MEAT, MAT_FISH, MAT_POTION, ITEM_KEY,
+		global.CONTROLLER.food_carrot, global.CONTROLLER.seed_carrot, BUILD_WALL_GRASS, BUILD_FLOOR_GRASS, BUILD_FLOOR_SOIL,
+		RECIPE_WALL_GRASS, RECIPE_FLOOR_GRASS, RECIPE_FLOOR_SOIL];
+	for(var i = 0; i < array_length(_known); i++){
+		var _item = _known[i];
+		if(is_struct(_item) && _item.name == _saved.name && _item.type == _saved.type) return _item;
+	}
+	for(var b = 0; b < array_length(_bag_obj.bag_list); b++){
+		var _existing_bag = _bag_obj.bag_list[b];
+		for(var j = 0; j < array_length(_existing_bag.items); j++){
+			var _item = _existing_bag.items[j];
+			if(is_struct(_item) && _item.name == _saved.name && _item.type == _saved.type) return _item;
+		}
+	}
+
+	var _sprite = -1;
+	if(variable_struct_exists(_saved, "sprite_name") && _saved.sprite_name != "") _sprite = asset_get_index(_saved.sprite_name);
+	else if(variable_struct_exists(_saved, "sprite") && is_real(_saved.sprite)) _sprite = _saved.sprite;
+	var _frame = variable_struct_exists(_saved, "index") ? _saved.index : 0;
+	var _data = variable_struct_exists(_saved, "data") ? _saved.data : -1;
+	var _data_type = variable_struct_exists(_saved, "data_type") ? _saved.data_type : "Damage";
+	var _result = -1;
+	if(_saved.type == ITEM_TYPE.tool){
+		if(_sprite < 0) _sprite = spr_bag_items;
+		var _tool_type = variable_struct_exists(_saved, "tool_type") ? _saved.tool_type : 0;
+		_result = new scr_tool_class(_saved.name, _sprite, _frame, _tool_type, _bag_obj.equip_weapon, -1, _data, _data_type);
+	} else if(_saved.type == ITEM_TYPE.bag){
+		var _equip_fn = _bag_obj.equip_weapon;
+		if(_saved.sprite_name == "spr_items_boots") _equip_fn = _bag_obj.equip_boots;
+		else if(_saved.sprite_name == "spr_items_shield") _equip_fn = _bag_obj.equip_shield;
+		else if(_saved.sprite_name == "spr_items_helm") _equip_fn = _bag_obj.equip_helm;
+		else if(_saved.sprite_name == "spr_items_chest") _equip_fn = _bag_obj.equip_chest;
+		if(_sprite < 0) _sprite = spr_items;
+		_result = new scr_gear_class(_saved.name, _sprite, _frame, _equip_fn, -1, _data, _data_type);
+	} else {
+		if(_sprite < 0) _sprite = spr_items;
+		_result = new scr_item_class(_saved.name, _sprite, _frame);
+	}
+	if(is_struct(_result) && variable_struct_exists(_saved, "id")) _result.id = _saved.id;
+	if(is_struct(_result) && variable_struct_exists(_saved, "seed")) _result.seed = _saved.seed;
+	if(is_real(_saved.id)) BAG_ITEM_ID = max(BAG_ITEM_ID, _saved.id + 1);
+	return _result;
+}
+
+function scr_load_bag(_record, _bag_obj){
+	if(!is_struct(_record) || !variable_struct_exists(_record, "items") || !is_array(_record.items)) return -1;
+	var _name = variable_struct_exists(_record, "name") ? _record.name : "bag";
+	var _loaded = scr_bag_create(array_length(_record.items), _name);
+	_loaded.resizable = variable_struct_exists(_record, "resizable") ? _record.resizable : false;
+	for(var i = 0; i < array_length(_record.items); i++){
+		var _saved = _record.items[i];
+		if(is_struct(_saved)) _loaded.items[i] = scr_load_item(_saved, _bag_obj);
+		if(is_array(_record.amount) && i < array_length(_record.amount)) _loaded.amount[i] = max(0, _record.amount[i]);
+	}
+	return _loaded;
+}
+
+function scr_copy_bag_state(_target, _source){
+	_target.name = _source.name;
+	_target.resizable = _source.resizable;
+	_target.items = _source.items;
+	_target.amount = _source.amount;
+}
+
+function scr_apply_pending_inventory(_bag_obj){
+	if(!is_struct(global.PENDING_SAVE)) return;
+	var _pending = global.PENDING_SAVE;
+	if(variable_struct_exists(_pending, "bags") && is_array(_pending.bags)){
+		for(var i = 0; i < min(array_length(_pending.bags), array_length(_bag_obj.bag_list)); i++){
+			var _loaded = scr_load_bag(_pending.bags[i], _bag_obj);
+			if(is_struct(_loaded)) scr_copy_bag_state(_bag_obj.bag_list[i], _loaded);
+		}
+		_bag_obj.bag_index = clamp(variable_struct_exists(_pending, "bag_index") ? _pending.bag_index : 0, 0, array_length(_bag_obj.bag_list) - 1);
+		PLAYER_BAG_CURRENT = _bag_obj.bag_list[_bag_obj.bag_index];
+		PLAYER_BAG_ITEMS = _bag_obj.bag_list[0];
+		PLAYER_BAG_RECIPES = _bag_obj.bag_list[1];
+	}
+	if(variable_struct_exists(_pending, "gear") && is_struct(_pending.gear)){
+		var _loaded_gear = scr_load_bag(_pending.gear, _bag_obj);
+		if(is_struct(_loaded_gear)) scr_copy_bag_state(PLAYER_GEAR, _loaded_gear);
+	}
+}
+
+function scr_apply_pending_player(_player){
+	if(!is_struct(global.PENDING_SAVE) || !variable_struct_exists(global.PENDING_SAVE, "player")) return;
+	var _saved = global.PENDING_SAVE.player;
+	if(!is_struct(_saved)) return;
+	if(variable_struct_exists(_saved, "x")) _player.x = _saved.x;
+	if(variable_struct_exists(_saved, "y")) _player.y = _saved.y;
+	if(variable_struct_exists(_saved, "sprite_selection")) _player.sprite_selection = clamp(_saved.sprite_selection, 0, 3);
 }
 
 /// Use a fishing rod while facing a water tile. Fishing is a short stamina action with no minigame.

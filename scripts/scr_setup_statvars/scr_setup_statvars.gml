@@ -10,6 +10,7 @@ function scr_setup_statvars(_hp, _dmg, _spd, _stam=0){
 	life.import(STAT_DATA.life);
 	damage.import(STAT_DATA.damage);
 	spd.import(STAT_DATA.spd);
+	if(is_struct(STAT_DATA) && variable_struct_exists(STAT_DATA, "stamina")) stamina.import(STAT_DATA.stamina);
 	
 	take_damage = function(dmg){
 		/// player damage -- has blocking ability

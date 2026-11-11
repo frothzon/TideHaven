@@ -6,5 +6,7 @@ scr_init_bag_gui();
 /// create structs for PLAYER_BAG and items
 scr_setup_test_bag();
 
+scr_apply_pending_inventory(id);
+
 /// create struct for handeling drag and drop
 scr_setup_dragger();

@@ -15,7 +15,7 @@ function scr_init_builder(){
 
 	// hold position
 	anchor = {
-		x: 0,
-		y: 0
+		x: x,
+		y: y
 	}
 }

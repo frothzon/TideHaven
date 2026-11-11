@@ -18,7 +18,8 @@ if(CURRENT_AREA == AREA_DUNGEON){
 	var _make_wall = function(_wx, _wy){
 		var _wall = instance_create_depth(_wx, _wy, -80, obj_wall);
 		_wall.sprite_index = spr_wall_tile;
-		_make_scene_object(_wall);
+		_wall.dungeon_scene_object = true;
+		array_push(global.CONFIG.dungeon_scene_objects, _wall);
 	};
 
 	// Clear any generated map collision and resource spawns under the fixed cave layout.

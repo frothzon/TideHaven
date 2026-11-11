@@ -1,0 +1,54 @@
+{
+  "$GMObject":"",
+  "%Name":"obj_floor_parent",
+  "eventList":[
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":0,"eventType":0,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+    {"$GMEvent":"v1","%Name":"","collisionObjectId":null,"eventNum":2,"eventType":3,"isDnD":false,"name":"","resourceType":"GMEvent","resourceVersion":"2.0",},
+  ],
+  "managed":true,
+  "name":"obj_floor_parent",
+  "overriddenProperties":[],
+  "parent":{
+    "name":"Parent Heirarchy",
+    "path":"folders/Objects/World/Parent Heirarchy.yy",
+  },
+  "parentObjectId":{
+    "name":"obj_targetable_parent",
+    "path":"objects/obj_targetable_parent/obj_targetable_parent.yy",
+  },
+  "persistent":false,
+  "physicsAngularDamping":0.1,
+  "physicsDensity":0.5,
+  "physicsFriction":0.2,
+  "physicsGroup":1,
+  "physicsKinematic":false,
+  "physicsLinearDamping":0.1,
+  "physicsObject":true,
+  "physicsRestitution":0.1,
+  "physicsSensor":false,
+  "physicsShape":1,
+  "physicsShapePoints":[
+    {"x":0.0,"y":0.0,},
+    {"x":16.0,"y":0.0,},
+    {"x":16.0,"y":16.0,},
+    {"x":0.0,"y":16.0,},
+  ],
+  "physicsStartAwake":true,
+  "properties":[
+    {"$GMObjectProperty":"v2","%Name":"snd_on_hit","filters":[
+        "GMSound",
+      ],"listItems":[],"multiselect":false,"name":"snd_on_hit","rangeEnabled":false,"rangeMax":10.0,"rangeMin":0.0,"resource":{"name":"snd_whack3","path":"sounds/snd_whack3/snd_whack3.yy",},"resourceType":"GMObjectProperty","resourceVersion":"2.0","value":"snd_whack3","varType":5,},
+  ],
+  "resourceType":"GMObject",
+  "resourceVersion":"2.0",
+  "solid":false,
+  "spriteId":{
+    "name":"spr_square",
+    "path":"sprites/spr_square/spr_square.yy",
+  },
+  "spriteMaskId":{
+    "name":"spr_square",
+    "path":"sprites/spr_square/spr_square.yy",
+  },
+  "visible":true,
+}

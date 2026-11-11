@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"set_sprite_rotation",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"set_sprite_rotation",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

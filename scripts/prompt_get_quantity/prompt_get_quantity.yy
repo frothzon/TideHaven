@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"prompt_get_quantity",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"prompt_get_quantity",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"backup_stats",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"backup_stats",
+  "parent":{
+    "name":"Player",
+    "path":"folders/Scripts/Player.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

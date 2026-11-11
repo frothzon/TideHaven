@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_animate_player",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_animate_player",
+  "parent":{
+    "name":"Controls",
+    "path":"folders/Scripts/Player/Controls.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

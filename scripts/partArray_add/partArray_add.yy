@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"partArray_add",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"partArray_add",
+  "parent":{
+    "name":"particles",
+    "path":"folders/Scripts/particles.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

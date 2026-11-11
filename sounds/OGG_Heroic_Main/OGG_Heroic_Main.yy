@@ -1,0 +1,26 @@
+{
+  "$GMSound":"v2",
+  "%Name":"OGG_Heroic_Main",
+  "audioGroupId":{
+    "name":"audiogroup_default",
+    "path":"audiogroups/audiogroup_default",
+  },
+  "bitDepth":1,
+  "channelFormat":0,
+  "compression":1,
+  "compressionQuality":4,
+  "conversionMode":0,
+  "duration":157.71428,
+  "exportDir":"",
+  "name":"OGG_Heroic_Main",
+  "parent":{
+    "name":"OGG",
+    "path":"folders/Sounds/Music/OGG.yy",
+  },
+  "preload":false,
+  "resourceType":"GMSound",
+  "resourceVersion":"2.0",
+  "sampleRate":44100,
+  "soundFile":"OGG_Heroic_Main.ogg",
+  "volume":0.5,
+}

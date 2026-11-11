@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_tooltips_class",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_tooltips_class",
+  "parent":{
+    "name":"tooltips",
+    "path":"folders/Scripts/tooltips.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -1,0 +1,16 @@
+
+[done] Smooth HP bar transitions
+[done] Energy Bar + energy cost for tools
+Fishing mechanism - no fancy minigame
+Level Up Sequence
+Second level of perlin noise for biome diversity
+Menu State Machine + buttons
+	we have map, inventory, and skill tree that need displayed
+Template editor for housing?
+	I want to be able to make custom dwellings for the inhabitants
+	and that will require modifying the terrain, and placing blocks
+	(being able to load and save it would be nice... basically a csv with object indexes)
+Ability to place special pathing over the water (like forager)
+	only able to place it where there is wall, it removes wall from tile
+	and places the wall back once it is destroyed
+Skill Tree Prettifying

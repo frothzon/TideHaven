@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"start_glint_shader",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"start_glint_shader",
+  "parent":{
+    "name":"Scripts",
+    "path":"folders/Scripts.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

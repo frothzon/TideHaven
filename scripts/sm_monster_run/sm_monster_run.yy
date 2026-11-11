@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"sm_monster_run",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"sm_monster_run",
+  "parent":{
+    "name":"States",
+    "path":"folders/Scripts/Monster/States.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

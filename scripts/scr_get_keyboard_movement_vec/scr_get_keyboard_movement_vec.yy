@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_get_keyboard_movement_vec",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_get_keyboard_movement_vec",
+  "parent":{
+    "name":"Controls",
+    "path":"folders/Scripts/Player/Controls.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

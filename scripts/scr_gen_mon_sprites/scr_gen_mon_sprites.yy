@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_gen_mon_sprites",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_gen_mon_sprites",
+  "parent":{
+    "name":"Monster",
+    "path":"folders/Scripts/World/Monster.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

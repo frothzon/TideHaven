@@ -1,0 +1,8 @@
+
+1. Items
+	- Bottles
+	- Axe
+	- Sword
+2. Build first area
+3. Build first dungeon
+4. Build first shrine

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"eval_skill",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"eval_skill",
+  "parent":{
+    "name":"Skills",
+    "path":"folders/Scripts/Player/Skills.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_create_textbox",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_create_textbox",
+  "parent":{
+    "name":"Messages",
+    "path":"folders/Scripts/Messages.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

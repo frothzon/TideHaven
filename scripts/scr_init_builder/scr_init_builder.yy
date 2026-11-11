@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_init_builder",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_init_builder",
+  "parent":{
+    "name":"Builder",
+    "path":"folders/Scripts/World/Builder.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

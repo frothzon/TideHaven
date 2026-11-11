@@ -1,0 +1,13 @@
+{
+  "$GMScript":"v1",
+  "%Name":"scr_build_plant_data",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"scr_build_plant_data",
+  "parent":{
+    "name":"Plants",
+    "path":"folders/Scripts/World/Plants.yy",
+  },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
+}

@@ -27,7 +27,7 @@ The project was last built and launched on **2026-11-11** in GameMaker IDE **202
 
 ## Building and housing
 
-The starter recipe list includes a Water Bridge recipe (3 wood and 1 rock). Place the bridge item over water to create a walkable tile; destroying the bridge restores the previous water tile.
+The starter recipe list includes a Water Bridge recipe (3 wood and 1 rock). Existing saves receive it once on load if it is missing. Place the bridge item over water to create a walkable tile; destroying the bridge restores the previous water tile.
 
 House templates capture placed floor, wall, and soil pieces within 128 pixels. Up to 12 templates are kept in the versioned save. Placement checks for land, collisions, and the required materials, then saves the placed pieces with the room state. These interactions compile and launch, but still need in-game verification.
 

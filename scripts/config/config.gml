@@ -591,6 +591,10 @@ function scr_apply_pending_inventory(_bag_obj){
 		PLAYER_BAG_ITEMS = _bag_obj.bag_list[0];
 		PLAYER_BAG_RECIPES = _bag_obj.bag_list[1];
 	}
+	// Introduced after older saves were created; grant it once without duplicating it.
+	if(scr_bag_search(PLAYER_BAG_RECIPES, RECIPE_WATER_BRIDGE, "name") < 0){
+		scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_WATER_BRIDGE, 1, true);
+	}
 	if(variable_struct_exists(_pending, "gear") && is_struct(_pending.gear)){
 		var _loaded_gear = scr_load_bag(_pending.gear, _bag_obj);
 		if(is_struct(_loaded_gear)) scr_copy_bag_state(PLAYER_GEAR, _loaded_gear);

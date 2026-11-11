@@ -42,6 +42,17 @@ function config(){
 		world_index: 0,
 		world_objects: [],
 		world_snapshot_saved: [],
+		housing_templates: [],
+		housing_template_index: 0,
+		housing_template_active: false,
+		current_area: "overworld",
+		shrine_claimed: false,
+		overworld_spawn: -1,
+		overworld_gate_position: -1,
+		tutorial_position: -1,
+		overworld_guide_ready: false,
+		dungeon_scene_objects: [],
+		dungeon_saved_wall_cells: [],
 		creature_list: scr_gen_seed_array(),
 		skill_data: array_create(26, -1),
 		player_stats: {life:-1,damage:-1,spd:-1},
@@ -59,6 +70,7 @@ function config(){
 		game_paused: false,
 		savable_objects: [
 			obj_builder_floor,
+			obj_builder_soil,
 			obj_breakable_parent
 		],
 		world_ready: array_create(30, 0),
@@ -99,11 +111,13 @@ function config(){
 		wall_grass: new scr_item_class("Grass Wall", spr_build_wall, 1, scr_place_building),
 		floor_grass: new scr_item_class("Grass Floor", spr_build_floor, 1, scr_place_floor),
 		floor_soil: new scr_item_class("Soil", spr_soil, 0, scr_place_dirt),
+		water_bridge: new scr_item_class("Water Bridge", spr_build_floor, 0, scr_place_bridge, -1, "Place on water to make a walkable path"),
 		
 		/// recipes
 		rec_wall_grass: -1,
 		rec_floor_grass: -1,
 		rec_floor_soil: -1,
+		rec_water_bridge: -1,
 		
 		/// sprites for monsters
 		mon_sprites: [],
@@ -131,6 +145,7 @@ function config(){
 	global.CONTROLLER.rec_floor_grass = new scr_recipe_class("Grass Floor Recipe", [MAT_WOOD, MAT_LEAF], [2, 2], BUILD_FLOOR_GRASS, 1);
 	/// recipe to create soil
 	global.CONTROLLER.rec_floor_soil = new scr_recipe_class("Soil Recipe", [MAT_ROCK, MAT_LEAF], [2, 1], BUILD_FLOOR_SOIL, 3);
+	global.CONTROLLER.rec_water_bridge = new scr_recipe_class("Water Bridge Recipe", [MAT_WOOD, MAT_ROCK], [3, 1], BUILD_WATER_BRIDGE, 3);
 	
 	//==================================== Seed creation ==========================================================================//
 	// carrot seeds
@@ -164,6 +179,14 @@ function config(){
 #macro WORLD_INDEX global.CONFIG.world_index
 #macro WORLD_OBJECTS global.CONFIG.world_objects
 #macro WORLD_SNAPSHOT_SAVED global.CONFIG.world_snapshot_saved
+#macro CURRENT_AREA global.CONFIG.current_area
+#macro AREA_OVERWORLD "overworld"
+#macro AREA_DUNGEON "dungeon"
+#macro BIOME_COAST 0
+#macro BIOME_GROVE 1
+#macro BIOME_HIGHLAND 2
+#macro DUNGEON_CENTER_X 3400
+#macro DUNGEON_CENTER_Y 3300
 #macro WORLD_SAVELIST global.CONTROLLER.savable_objects
 #macro WORLD_READY global.CONTROLLER.world_ready
 #macro CREATURE_SEEDS global.CONFIG.creature_list
@@ -231,11 +254,13 @@ function config(){
 #macro BUILD_WALL_GRASS global.CONTROLLER.wall_grass
 #macro BUILD_FLOOR_GRASS global.CONTROLLER.floor_grass
 #macro BUILD_FLOOR_SOIL global.CONTROLLER.floor_soil
+#macro BUILD_WATER_BRIDGE global.CONTROLLER.water_bridge
 
 //--------------- Recipes ---------------//
 #macro RECIPE_WALL_GRASS global.CONTROLLER.rec_wall_grass
 #macro RECIPE_FLOOR_GRASS global.CONTROLLER.rec_floor_grass
 #macro RECIPE_FLOOR_SOIL global.CONTROLLER.rec_floor_soil
+#macro RECIPE_WATER_BRIDGE global.CONTROLLER.rec_water_bridge
 
 /*
 	======================================= Functions =========================================
@@ -347,6 +372,13 @@ function scr_save_game(){
 		world_graph: _grid_save,
 		world_objects: scr_save_room_data(),
 		world_snapshot_saved: _saved_world_ready,
+		housing_templates: global.CONFIG.housing_templates,
+		housing_template_index: global.CONFIG.housing_template_index,
+		current_area: CURRENT_AREA,
+		shrine_claimed: global.CONFIG.shrine_claimed,
+		overworld_spawn: global.CONFIG.overworld_spawn,
+		overworld_gate_position: global.CONFIG.overworld_gate_position,
+		tutorial_position: global.CONFIG.tutorial_position,
 		level: STAT_LEVEL,
 		level_points: STAT_POINTS,
 		exp_amount: STAT_EXP.export(),
@@ -374,6 +406,7 @@ function scr_save_game(){
 		return false;
 	}
 	show_debug_message("TideHaven save written.");
+	global.PENDING_SAVE = _payload;
 	return true;
 }
 
@@ -400,6 +433,13 @@ function scr_apply_saved_config(_data){
 	if(variable_struct_exists(_data, "world_graph")) scr_apply_saved_world_graph(_data.world_graph);
 	if(variable_struct_exists(_data, "world_objects") && is_array(_data.world_objects)) WORLD_OBJECTS = _data.world_objects;
 	if(variable_struct_exists(_data, "world_snapshot_saved") && is_array(_data.world_snapshot_saved)) WORLD_SNAPSHOT_SAVED = _data.world_snapshot_saved;
+	if(variable_struct_exists(_data, "housing_templates") && is_array(_data.housing_templates)) global.CONFIG.housing_templates = _data.housing_templates;
+	if(variable_struct_exists(_data, "housing_template_index")) global.CONFIG.housing_template_index = max(0, _data.housing_template_index);
+	if(variable_struct_exists(_data, "current_area")) CURRENT_AREA = _data.current_area;
+	if(variable_struct_exists(_data, "shrine_claimed")) global.CONFIG.shrine_claimed = _data.shrine_claimed;
+	if(variable_struct_exists(_data, "overworld_spawn")) global.CONFIG.overworld_spawn = _data.overworld_spawn;
+	if(variable_struct_exists(_data, "overworld_gate_position")) global.CONFIG.overworld_gate_position = _data.overworld_gate_position;
+	if(variable_struct_exists(_data, "tutorial_position")) global.CONFIG.tutorial_position = _data.tutorial_position;
 	if(variable_struct_exists(_data, "level")) STAT_LEVEL = _data.level;
 	if(variable_struct_exists(_data, "level_points")) STAT_POINTS = _data.level_points;
 	if(variable_struct_exists(_data, "exp_amount") && is_struct(_data.exp_amount)) STAT_EXP.import(_data.exp_amount);
@@ -475,8 +515,8 @@ function scr_load_game(){
 function scr_load_item(_saved, _bag_obj){
 	if(!is_struct(_saved) || !variable_struct_exists(_saved, "name")) return -1;
 	var _known = [MAT_WOOD, MAT_LEAF, MAT_ROCK, MAT_GOLD, MAT_BERRY, MAT_MEAT, MAT_FISH, MAT_POTION, ITEM_KEY,
-		global.CONTROLLER.food_carrot, global.CONTROLLER.seed_carrot, BUILD_WALL_GRASS, BUILD_FLOOR_GRASS, BUILD_FLOOR_SOIL,
-		RECIPE_WALL_GRASS, RECIPE_FLOOR_GRASS, RECIPE_FLOOR_SOIL];
+		global.CONTROLLER.food_carrot, global.CONTROLLER.seed_carrot, BUILD_WALL_GRASS, BUILD_FLOOR_GRASS, BUILD_FLOOR_SOIL, BUILD_WATER_BRIDGE,
+		RECIPE_WALL_GRASS, RECIPE_FLOOR_GRASS, RECIPE_FLOOR_SOIL, RECIPE_WATER_BRIDGE];
 	for(var i = 0; i < array_length(_known); i++){
 		var _item = _known[i];
 		if(is_struct(_item) && _item.name == _saved.name && _item.type == _saved.type) return _item;
@@ -566,6 +606,171 @@ function scr_apply_pending_player(_player){
 	if(variable_struct_exists(_saved, "sprite_selection")) _player.sprite_selection = clamp(_saved.sprite_selection, 0, 3);
 }
 
+function scr_ensure_overworld_guide(){
+	if(CURRENT_AREA != AREA_OVERWORLD || global.CONFIG.overworld_guide_ready) return;
+	var _player = instance_find(obj_player, 0);
+	var _world = instance_find(perlin_world, 0);
+	if(!scr_check_instance(_player) || !scr_check_instance(_world)) return;
+
+	var _has_gate = false;
+	with(obj_npc_parent){
+		if(variable_instance_exists(id, "dungeon_gate") && dungeon_gate){
+			_has_gate = true;
+			interaction_range = 64;
+			depth = -1000;
+		}
+	}
+	if(!_has_gate){
+		var _position = global.CONFIG.overworld_gate_position;
+		if(is_struct(_position) && point_distance(_player.x, _player.y, _position.x, _position.y) > 256){
+			_position = -1;
+			global.CONFIG.overworld_gate_position = -1;
+		}
+		if(!is_struct(_position)){
+			var _offsets = [];
+			var _rings = [128,144,160,176,192];
+			for(var r = 0; r < array_length(_rings); r++){
+				var d = _rings[r];
+				array_push(_offsets, [d,0], [-d,0], [0,d], [0,-d], [d,d], [-d,d], [d,-d], [-d,-d]);
+			}
+			for(var i = 0; i < array_length(_offsets); i++){
+				var _x = _player.x + _offsets[i][0];
+				var _y = _player.y + _offsets[i][1];
+				var _cell = _world.position_to_grid(_x, _y);
+				if(_cell.x >= 0 && _cell.y >= 0 && _cell.x < ds_grid_width(_world.grid[0]) && _cell.y < ds_grid_height(_world.grid[0])
+				&& ds_grid_get(_world.grid[0], _cell.x, _cell.y) > 0
+				&& !scr_place_meeting_list(_x, _y, [obj_breakable_parent, obj_floor_parent, obj_player])){
+					_position = {x: _x, y: _y};
+					break;
+				}
+			}
+			if(!is_struct(_position)) _position = {x: _player.x + 64, y: _player.y};
+			global.CONFIG.overworld_gate_position = _position;
+		}
+		var _gate = instance_create_depth(_position.x, _position.y, 0, obj_npc_parent);
+		_gate.dungeon_gate = true;
+		_gate.interaction_range = 64;
+		_gate.depth = -1000;
+		_gate.sprite_index = spr_door_locked;
+	}
+
+	var _has_guide = false;
+	with(obj_npc_parent){
+		if(variable_instance_exists(id, "tidehaven_guide") && tidehaven_guide){
+			_has_guide = true;
+			interaction_range = 64;
+			image_xscale = 0.25;
+			image_yscale = 0.25;
+			depth = -1000;
+		}
+	}
+	if(!_has_guide){
+		var _guide_position = global.CONFIG.tutorial_position;
+		if(is_struct(_guide_position) && point_distance(_player.x, _player.y, _guide_position.x, _guide_position.y) > 256){
+			_guide_position = -1;
+			global.CONFIG.tutorial_position = -1;
+		}
+		if(!is_struct(_guide_position)){
+			_guide_position = {x: _player.x - 48, y: _player.y + 24};
+			global.CONFIG.tutorial_position = _guide_position;
+		}
+		var _guide = instance_create_depth(_guide_position.x, _guide_position.y, 0, obj_npc_parent);
+		_guide.tidehaven_guide = true;
+		_guide.interaction_range = 64;
+		_guide.image_xscale = 0.25;
+		_guide.image_yscale = 0.25;
+		_guide.depth = -1000;
+		_guide.messages = [
+			"Welcome to TideHaven. Move with WASD and use E to interact.",
+			"Open the marked cave door near camp to begin the shrine trail.",
+			"Follow the stone path. Press E at the shrine chest for a reward.",
+			"The door at the start of the cave returns you here. P opens inventory; B opens skills."
+		];
+	}
+	global.CONFIG.overworld_guide_ready = true;
+}
+
+function scr_ensure_dungeon_scene(){
+	if(CURRENT_AREA != AREA_DUNGEON) return;
+	var _exists = false;
+	with(obj_world_generator){
+		if(variable_instance_exists(id, "dungeon_scene") && dungeon_scene) _exists = true;
+	}
+	if(!_exists){
+		global.CONFIG.dungeon_scene_objects = [];
+		instance_create_depth(DUNGEON_CENTER_X, DUNGEON_CENTER_Y, -50, obj_world_generator);
+	}
+}
+
+function scr_clear_dungeon_scene(){
+	var _world = instance_find(perlin_world, 0);
+	if(scr_check_instance(_world) && is_array(global.CONFIG.dungeon_saved_wall_cells)){
+		for(var i = 0; i < array_length(global.CONFIG.dungeon_saved_wall_cells); i++){
+			var _cell = global.CONFIG.dungeon_saved_wall_cells[i];
+			tilemap_set(_world.map_walls, _cell.data, _cell.x, _cell.y);
+		}
+	}
+	global.CONFIG.dungeon_saved_wall_cells = [];
+	if(is_array(global.CONFIG.dungeon_scene_objects)){
+		for(var i = 0; i < array_length(global.CONFIG.dungeon_scene_objects); i++){
+			var _instance = global.CONFIG.dungeon_scene_objects[i];
+			if(scr_check_instance(_instance)) instance_destroy(_instance);
+		}
+	}
+	global.CONFIG.dungeon_scene_objects = [];
+}
+
+function scr_enter_dungeon(){
+	if(CURRENT_AREA != AREA_OVERWORLD) return false;
+	var _player = instance_find(obj_player, 0);
+	if(!scr_check_instance(_player)) return false;
+	scr_roomEndSaveState();
+	global.CONFIG.overworld_spawn = {x: _player.x, y: _player.y, sprite_selection: _player.sprite_selection};
+	CURRENT_AREA = AREA_DUNGEON;
+	_player.x = DUNGEON_CENTER_X - 400;
+	_player.y = DUNGEON_CENTER_Y;
+	var _camera_lerp = CAMERA.lerpRatio;
+	CAMERA.lerpRatio = 1;
+	CAMERA.center_on_object(_player);
+	CAMERA.update();
+	CAMERA.lerpRatio = _camera_lerp;
+	scr_ensure_dungeon_scene();
+	scr_save_game();
+	return true;
+}
+
+function scr_return_to_overworld(){
+	if(CURRENT_AREA != AREA_DUNGEON) return false;
+	var _player = instance_find(obj_player, 0);
+	if(!scr_check_instance(_player)) return false;
+	scr_clear_dungeon_scene();
+	var _position = global.CONFIG.overworld_spawn;
+	CURRENT_AREA = AREA_OVERWORLD;
+	if(is_struct(_position)){
+		_player.x = _position.x;
+		_player.y = _position.y;
+		if(variable_struct_exists(_position, "sprite_selection")) _player.sprite_selection = _position.sprite_selection;
+	}
+	var _camera_lerp = CAMERA.lerpRatio;
+	CAMERA.lerpRatio = 1;
+	CAMERA.center_on_object(_player);
+	CAMERA.update();
+	CAMERA.lerpRatio = _camera_lerp;
+	scr_roomStartLoadState();
+	scr_ensure_overworld_guide();
+	scr_save_game();
+	return true;
+}
+
+function scr_claim_dungeon_shrine(){
+	if(global.CONFIG.shrine_claimed) return false;
+	if(!scr_bag_add_item(PLAYER_BAG_ITEMS, MAT_POTION, 2)) return false;
+	global.CONFIG.shrine_claimed = true;
+	STAT_EXP.value += 15;
+	scr_save_game();
+	return true;
+}
+
 /// Use a fishing rod while facing a water tile. Fishing is a short stamina action with no minigame.
 function scr_use_fishing_rod(item, bag){
 	if(GAME_PAUSED) return false;
@@ -641,6 +846,161 @@ function scr_set_volume(value, is_music=0){
 /// get current seed
 function scr_get_current_seed(){
 	return(WORLD_SEEDS[WORLD_INDEX]);
+}
+
+function scr_get_biome_at_position(_x, _y){
+	var _world = instance_find(perlin_world, 0);
+	if(!scr_check_instance(_world) || !variable_instance_exists(_world, "biome_grid")) return BIOME_GROVE;
+	var _cell = _world.position_to_grid(_x, _y);
+	if(_cell.x < 0 || _cell.y < 0 || _cell.x >= ds_grid_width(_world.biome_grid) || _cell.y >= ds_grid_height(_world.biome_grid)) return BIOME_GROVE;
+	return ds_grid_get(_world.biome_grid, _cell.x, _cell.y);
+}
+
+function scr_apply_bridge_tile(_bridge){
+	if(!scr_check_instance(_bridge) || !variable_instance_exists(_bridge, "bridge_mode") || !_bridge.bridge_mode || !is_struct(_bridge.bridge_cell)) return false;
+	var _world = instance_find(perlin_world, 0);
+	if(!scr_check_instance(_world)) return false;
+	var _cell = _bridge.bridge_cell;
+	return tilemap_set(_world.map_walls, 0, _cell.x, _cell.y);
+}
+
+function scr_restore_bridge_tile(_bridge){
+	if(!scr_check_instance(_bridge) || !variable_instance_exists(_bridge, "bridge_mode") || !_bridge.bridge_mode || !is_struct(_bridge.bridge_cell)) return false;
+	var _world = instance_find(perlin_world, 0);
+	if(!scr_check_instance(_world)) return false;
+	var _cell = _bridge.bridge_cell;
+	var _restored = tilemap_set(_world.map_walls, _bridge.bridge_tile_data, _cell.x, _cell.y);
+	_bridge.bridge_cell = -1;
+	return _restored;
+}
+
+function scr_place_bridge_tile(_bridge){
+	if(!scr_check_instance(_bridge) || !variable_instance_exists(_bridge, "bridge_mode") || !_bridge.bridge_mode) return false;
+	var _world = instance_find(perlin_world, 0);
+	if(!scr_check_instance(_world)) return false;
+	var _cell = _world.position_to_grid(_bridge.x, _bridge.y);
+	if(_cell.x < 0 || _cell.y < 0 || _cell.x >= ds_grid_width(_world.grid[0]) || _cell.y >= ds_grid_height(_world.grid[0])) return false;
+	_bridge.bridge_tile_data = tilemap_get(_world.map_walls, _cell.x, _cell.y);
+	_bridge.bridge_cell = _cell;
+	return scr_apply_bridge_tile(_bridge);
+}
+
+function scr_add_housing_template_object(_records, _instance, _center_x, _center_y, _radius){
+	if(!scr_check_instance(_instance) || !variable_instance_exists(_instance, "mode") || _instance.mode == 0) return _records;
+	if(point_distance(_instance.x, _instance.y, _center_x, _center_y) > _radius) return _records;
+	if(variable_instance_exists(_instance, "bridge_mode") && _instance.bridge_mode) return _records;
+	var _sprite_name = _instance.sprite_index >= 0 ? sprite_get_name(_instance.sprite_index) : "";
+	var _item_record = variable_instance_exists(_instance, "item") && is_struct(_instance.item) ? scr_save_item(_instance.item) : -1;
+	array_push(_records, {
+		object_name: object_get_name(_instance.object_index),
+		sprite_name: _sprite_name,
+		x_offset: _instance.x - _center_x,
+		y_offset: _instance.y - _center_y,
+		depth_offset: _instance.depth - _instance.y,
+		image_index: _instance.image_index,
+		image_xscale: _instance.image_xscale,
+		image_yscale: _instance.image_yscale,
+		image_angle: _instance.image_angle,
+		image_blend: _instance.image_blend,
+		item: _item_record
+	});
+	return _records;
+}
+
+function scr_capture_housing_template(_center_x, _center_y, _radius=128){
+	if(CURRENT_AREA != AREA_OVERWORLD) return false;
+	var _records = [];
+	for(var i = 0; i < instance_number(obj_builder_floor); i++) _records = scr_add_housing_template_object(_records, instance_find(obj_builder_floor, i), _center_x, _center_y, _radius);
+	for(var i = 0; i < instance_number(obj_builder_wall); i++) _records = scr_add_housing_template_object(_records, instance_find(obj_builder_wall, i), _center_x, _center_y, _radius);
+	for(var i = 0; i < instance_number(obj_builder_soil); i++) _records = scr_add_housing_template_object(_records, instance_find(obj_builder_soil, i), _center_x, _center_y, _radius);
+	if(array_length(_records) == 0) return false;
+	var _template_number = array_length(global.CONFIG.housing_templates) + 1;
+	var _template = {name: "House " + string(_template_number), cells: _records};
+	array_push(global.CONFIG.housing_templates, _template);
+	if(array_length(global.CONFIG.housing_templates) > 12){
+		array_delete(global.CONFIG.housing_templates, 0, 1);
+		_template_number--;
+	}
+	global.CONFIG.housing_template_index = array_length(global.CONFIG.housing_templates) - 1;
+	if(scr_save_game()) scr_show_text_float(_center_x, _center_y - 20, "Saved " + _template.name, c_lime);
+	return true;
+}
+
+function scr_housing_template_costs(_template, _bag){
+	if(!is_struct(_template) || !variable_struct_exists(_template, "cells") || !is_array(_template.cells)) return -1;
+	var _costs = [];
+	for(var i = 0; i < array_length(_template.cells); i++){
+		var _cell = _template.cells[i];
+		if(!is_struct(_cell) || !variable_struct_exists(_cell, "item") || !is_struct(_cell.item) || !variable_struct_exists(_cell.item, "id")) continue;
+		var _found = -1;
+		for(var c = 0; c < array_length(_costs); c++) if(_costs[c].id == _cell.item.id){ _found = c; break; }
+		if(_found >= 0){
+			_costs[_found].count++;
+		} else {
+			var _bag_index = scr_bag_search(_bag, {id:_cell.item.id});
+			if(_bag_index < 0) return -1;
+			array_push(_costs, {id:_cell.item.id, item:_bag.items[_bag_index], count:1});
+		}
+	}
+	for(var c = 0; c < array_length(_costs); c++){
+		var _bag_index = scr_bag_search(_bag, {id:_costs[c].id});
+		if(_bag_index < 0 || scr_bag_get_amount(_bag, _bag_index) < _costs[c].count) return -1;
+	}
+	return _costs;
+}
+
+function scr_housing_template_fits(_template, _x, _y, _ignore=noone){
+	if(!is_struct(_template) || !variable_struct_exists(_template, "cells") || !is_array(_template.cells) || array_length(_template.cells) == 0) return false;
+	for(var i = 0; i < array_length(_template.cells); i++){
+		var _cell = _template.cells[i];
+		if(!is_struct(_cell) || !variable_struct_exists(_cell, "object_name")) return false;
+		if(_cell.object_name != "obj_builder_floor" && _cell.object_name != "obj_builder_wall" && _cell.object_name != "obj_builder_soil") return false;
+		var _target_x = _x + _cell.x_offset;
+		var _target_y = _y + _cell.y_offset;
+		if(!scr_tile_at_position(_target_x, _target_y, "lay_sand")) return false;
+		var _blocked = false;
+		with(obj_breakable_parent) if(id != _ignore && point_in_circle(x, y, _target_x, _target_y, 12)) _blocked = true;
+		with(obj_floor_parent) if(id != _ignore && point_in_circle(x, y, _target_x, _target_y, 12)) _blocked = true;
+		if(_blocked) return false;
+	}
+	return true;
+}
+
+function scr_place_housing_template(_template, _x, _y, _bag, _ignore=noone){
+	var _costs = scr_housing_template_costs(_template, _bag);
+	if(!is_array(_costs) || !scr_housing_template_fits(_template, _x, _y, _ignore)) return false;
+	for(var c = 0; c < array_length(_costs); c++) scr_bag_add_item(_bag, _costs[c].item, -_costs[c].count, true);
+	var _bag_obj = instance_find(obj_player_bag, 0);
+	for(var i = 0; i < array_length(_template.cells); i++){
+		var _cell = _template.cells[i];
+		var _object_index = asset_get_index(_cell.object_name);
+		var _sprite_index = _cell.sprite_name != "" ? asset_get_index(_cell.sprite_name) : -1;
+		var _target_x = _x + _cell.x_offset;
+		var _target_y = _y + _cell.y_offset;
+		var _instance = instance_create_depth(_target_x, _target_y, _target_y + _cell.depth_offset, _object_index);
+		if(_sprite_index >= 0) _instance.sprite_index = _sprite_index;
+		_instance.image_index = _cell.image_index;
+		_instance.image_xscale = _cell.image_xscale;
+		_instance.image_yscale = _cell.image_yscale;
+		_instance.image_angle = _cell.image_angle;
+		_instance.image_blend = _cell.image_blend;
+		if(is_struct(_cell.item)) _instance.item = scr_load_item(_cell.item, _bag_obj);
+	}
+	scr_roomEndSaveState();
+	scr_save_game();
+	return true;
+}
+
+function scr_draw_housing_template_preview(_template, _x, _y, _valid){
+	var _tint = _valid ? c_lime : c_red;
+	draw_set_alpha(0.65);
+	for(var i = 0; i < array_length(_template.cells); i++){
+		var _cell = _template.cells[i];
+		var _sprite = _cell.sprite_name != "" ? asset_get_index(_cell.sprite_name) : -1;
+		if(_sprite >= 0) draw_sprite_ext(_sprite, _cell.image_index, _x + _cell.x_offset, _y + _cell.y_offset, _cell.image_xscale, _cell.image_yscale, _cell.image_angle, _tint, 0.65);
+	}
+	draw_set_alpha(1);
+	scr_draw_reset();
 }
 
 /// get current room

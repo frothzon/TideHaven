@@ -12,3 +12,16 @@ function scr_place_floor(item, bag){
 	/// remove from bag
 	scr_bag_add_item(bag, item, -1);
 }
+
+function scr_place_bridge(item, bag){
+	var _bridge = instance_create_depth(mouse_x, mouse_y, 0, obj_builder_floor);
+	_bridge.sprite_index = item.sprite;
+	_bridge.image_index = item.index;
+	_bridge.item = item;
+	_bridge.mode = 0;
+	_bridge.bridge_mode = true;
+	_bridge.bridge_cell = -1;
+	_bridge.bridge_tile_data = -1;
+	scr_bag_add_item(bag, item, -1);
+	return true;
+}

@@ -58,6 +58,9 @@ map_walls = layer_tilemap_create(lay_walls, -_size, -_size, ts_wall, _w, _h);
 
 /// water, sand, dirt, grass -- weights
 grid[0] = create_perlin_grid(_w,_h, perlin_stepsize, perlin_seed, layer_weights);
+// A separately seeded noise field creates broad, repeatable regions independent of terrain height.
+var _biome_seed = scr_get_current_seed() + 17863;
+biome_grid = create_perlin_grid(_w, _h, max(1, perlin_stepsize * 3), _biome_seed, [3,4,3]);
 grid[1] = ds_grid_create(_w,_h);
 grid[2] = ds_grid_create(_w,_h);
 grid[3] = ds_grid_create(_w,_h);
@@ -125,25 +128,22 @@ random_spawn_location = function(){
 for(var j = 0; j < _h; j++){
 	for(var i = 0; i < _w; i++){
 		/// restrict main grid to 4 values
-		ds_grid_set(grid[0],i,j,min(3,ds_grid_get(grid[0],i,j)));
-		/// set all first grid values
-		if(ds_grid_get(grid[1],i,j) != 0){
-			ds_grid_set(grid[1],i,j,1);	
+		var dude = min(3, ds_grid_get(grid[0], i, j));
+		ds_grid_set(grid[0], i, j, dude);
+		var _biome = ds_grid_get(biome_grid, i, j);
+		var _dirt_threshold = 2;
+		var _grass_threshold = 3;
+		if(_biome == BIOME_COAST){
+			_dirt_threshold = 3;
+			_grass_threshold = 3;
+		} else if(_biome == BIOME_GROVE){
+			_grass_threshold = 2;
 		}
-		/// set all second grid values
-		if(ds_grid_get(grid[2],i,j) > 1){
-			ds_grid_set(grid[2],i,j,1);	
-		} else {
-			ds_grid_set(grid[2],i,j,0);	
-		}
-		/// set all third grid values
-		if(ds_grid_get(grid[3],i,j) > 2){
-			ds_grid_set(grid[3],i,j,1);	
-		} else {
-			ds_grid_set(grid[3],i,j,0);	
-		}
+		/// The same height field now resolves to different ground blends by biome.
+		ds_grid_set(grid[1], i, j, dude > 0 ? 1 : 0);
+		ds_grid_set(grid[2], i, j, dude >= _dirt_threshold && dude > 0 ? 1 : 0);
+		ds_grid_set(grid[3], i, j, dude >= _grass_threshold && dude > 0 ? 1 : 0);
 		/********* DOODADS *************/
-		var dude = ds_grid_get(grid[0],i,j);
 		var _r1 = doodad_range1;
 		var _r2 = doodad_range2;
 		var _r3 = doodad_range3;
@@ -182,8 +182,8 @@ for(var j = 0; j < _h; j++){
 				}
 				break;
 		}
-		// call spawn script
-		custom_spawn_script(i, j, (i-1)*_size, (j-1)*_size, dude);
+		// Keep overworld resources out of the separate dungeon scene.
+		if(CURRENT_AREA == AREA_OVERWORLD) custom_spawn_script(i, j, (i-1)*_size, (j-1)*_size, dude);
 	}
 }
 
@@ -202,3 +202,9 @@ lg_set_tiles("lay_sand2",grid[1]);
 ds_grid_destroy(grid[1]);
 ds_grid_destroy(grid[2]);
 ds_grid_destroy(grid[3]);
+
+if(CURRENT_AREA == AREA_DUNGEON){
+	scr_ensure_dungeon_scene();
+} else {
+	scr_roomStartLoadState();
+}

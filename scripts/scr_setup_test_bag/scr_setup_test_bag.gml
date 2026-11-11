@@ -68,6 +68,7 @@ function scr_setup_test_bag(){
 	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_FLOOR_GRASS, 1, 1);
 	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_WALL_GRASS, 1, 1);
 	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_FLOOR_SOIL, 1, 1);
+	scr_bag_add_item(PLAYER_BAG_RECIPES, RECIPE_WATER_BRIDGE, 1, 1);
 	
 	scr_bag_add_item(PLAYER_BAG_ITEMS, global.CONTROLLER.seed_carrot, 3, 1);
 }

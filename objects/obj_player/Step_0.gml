@@ -1,6 +1,10 @@
 /// @description update player
 
 /// update player state machine
+// World generation runs during room creation, which may happen before this player instance exists.
+// Ensure the guide and cave entrance once both the world grid and player are available.
+if(CURRENT_AREA == AREA_OVERWORLD && !global.CONFIG.overworld_guide_ready) scr_ensure_overworld_guide();
+
 if(!BAG_PAUSED && !GAME_PAUSED && !show_skills){
 	held_shield = false;
 	switch(scr_get_state_index()){

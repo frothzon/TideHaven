@@ -71,6 +71,11 @@ function scr_roomEndSaveState(){
 			}
 			if(variable_instance_exists(id, "drop_item_weights") && is_array(drop_item_weights)) _record.drop_item_weights = drop_item_weights;
 			if(variable_instance_exists(id, "drop_quantities") && is_array(drop_quantities)) _record.drop_quantities = drop_quantities;
+			if(variable_instance_exists(id, "bridge_mode") && bridge_mode){
+				_record.bridge_mode = true;
+				_record.bridge_cell = bridge_cell;
+				_record.bridge_tile_data = bridge_tile_data;
+			}
 			array_push(WORLD_OBJECTS[WORLD_INDEX], _record);
 		}
 	}
@@ -121,5 +126,11 @@ function scr_roomStartLoadState(){
 		}
 		if(variable_instance_exists(_instance, "drop_item_weights") && variable_struct_exists(_record, "drop_item_weights") && is_array(_record.drop_item_weights)) _instance.drop_item_weights = _record.drop_item_weights;
 		if(variable_instance_exists(_instance, "drop_quantities") && variable_struct_exists(_record, "drop_quantities") && is_array(_record.drop_quantities)) _instance.drop_quantities = _record.drop_quantities;
+		if(variable_struct_exists(_record, "bridge_mode") && _record.bridge_mode){
+			_instance.bridge_mode = true;
+			_instance.bridge_cell = _record.bridge_cell;
+			_instance.bridge_tile_data = _record.bridge_tile_data;
+			scr_apply_bridge_tile(_instance);
+		}
 	}
 }

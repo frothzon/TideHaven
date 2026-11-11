@@ -7,9 +7,9 @@ Already present in the project
 - XP, level-ups, skill points, and a skill tree are implemented in code; they need integrated playthrough checks.
 - Inventory, equipment, recipe tabs, and a minimap exist. The unified menu state is implemented: P opens inventory, M opens the world map, B opens skills, and Escape returns to gameplay. The views are exclusive and pause gameplay.
 - The Perlin world, resource/enemy spawning, and basic wall/floor/soil construction are present.
-- A dungeon layout generator exists, but there is no playable dungeon or shrine room in the current room list.
+- The generated cave/shrine route now runs as an in-room scene; the full reward-and-return path still needs a playthrough check.
 - Fish exists as a healing item, but the current code has no fishing interaction.
-- Save/load helper functions exist, but no call sites were found; persistent progression and world building are not established.
+- Versioned JSON save/load and legacy progression migration are implemented. Restart works, while field-by-field persistence and real legacy-save migration still need checks.
 
 Implementation order
 1. [done 2026-11-11] Unify the inventory, map, skills, pause, and dialogue flow so only the intended view owns input and gameplay pauses consistently. Verified in GameMaker IDE: build/run succeeded; inventory, map, and skills opened exclusively and Escape resumed gameplay.
@@ -24,15 +24,16 @@ Implementation order
    - The blank `spr_skill_icon` was used by all 25 skill nodes. The pre-change project has no corresponding sprite to recover, so the nodes now use the existing `spr_inv_slot` art; GameMaker IDE build/run showed the full tree with visible node backgrounds. Dedicated skill artwork remains a polish item. Do not copy unrelated transparent root-level PNG exports into the project.
    - The local OneDrive mirror is cloud-only while its provider is off, so it was not available as an additional recovery source during this audit.
 4. [implemented; restart verified 2026-11-11] Establish versioned save/load for the world seed, player position and stats, inventory, gear, skills, room changes, and placed structures. The version-1 JSON save uses a temporary file and backup fallback; legacy INI/base64 progression and inventory migration is implemented. GameMaker build/run succeeded, wrote the save on exit, and loaded version 1 on restart with the gameplay scene and inventory visible. Still verify field-by-field persistence through room transitions, modified structures/plants, and migration from a real legacy save.
-5. Build one guided starting area, one short playable dungeon, and one shrine with a reward and return path. Reuse the existing dungeon-layout generator where it fits, and preserve the player state across the trip.
-6. Add an independent biome-noise layer with biome-specific ground, resources, and spawns. The current world setup copies one grid into its other grid slots.
-7. Add a placeable water path/bridge that records and restores replaced tiles, then build a housing-template editor on the same placement and save system. Store stable resource IDs in templates rather than transient object indexes.
+5. [implemented; build and guide dialogue checked 2026-11-11; full cave route still needs a playthrough] Build one guided starting area, one short playable dungeon, and one shrine with a reward and return path. The route preserves player state, and cave wall tiles are restored when leaving. Reuse the existing dungeon-layout generator where it fits.
+6. [implemented; build and Runner launch checked 2026-11-11] Add an independent biome-noise layer with biome-specific ground, resources, and spawns. The separate seeded field now selects coastal, grove, and highland ground blends and weights resource/enemy spawns.
+7. [implemented; build and Runner launch checked 2026-11-11; placement playtest pending] Add a placeable water bridge that records/restores its water tile and house-template capture, selection, preview, and placement using stable resource names and the save system. Controls: Ctrl+H captures nearby placed floor/wall/soil, Ctrl+J selects a saved template, Ctrl+T previews it, left-click places, Escape cancels. Bridge/template costs, collisions, cancellation, room transitions, and save/reload behavior still need in-game verification.
 8. Polish the restored art across menus, items, characters, creatures, and world tiles; add replacement art only for gaps that cannot be recovered. Finish with a documented GameMaker build and a full new-save playthrough.
 
 Acceptance
 - A new save can gather resources, use inventory and skills, reach the dungeon, earn the shrine reward, and return without a softlock.
 - [verified 2026-11-11] Menus do not overlap; gameplay pauses while a menu is open and resumes with Escape.
 - [partially verified 2026-11-11] Version-1 save writes and reloads after a Runner restart. Field-by-field persistence for seeds, progression, room snapshots, structures, and real legacy-save migration still needs verification.
-- [verified 2026-11-11] The project compiles and starts in the GameMaker IDE after the item-loop changes. The guided slice is still pending.
+- [verified 2026-11-11] The project compiles and starts in GameMaker IDE v2024.14.4.222 / Runtime v2024.14.4.268 after the guided-start and biome changes. Guide dialogue is visible; completing the cave route remains pending.
+- [verified 2026-11-11] The bridge/template implementation compiles and starts in GameMaker IDE v2024.14.4.222 / Runtime v2024.14.4.268. Interactive placement and persistence checks remain pending.
 - Recovered art uses the original GameMaker resource identities where possible, and no required sprite frame or asset reference is silently blank or missing.
 - The project opens, builds, and completes a new-save route from the starting area through the shrine reward and back without a softlock.

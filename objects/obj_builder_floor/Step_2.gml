@@ -1,6 +1,7 @@
 /// @description add item to bag
 
 if(life.value <= 0){
+	if(variable_instance_exists(id, "bridge_mode") && bridge_mode) scr_restore_bridge_tile(id);
 	if(is_struct(item)){
 		scr_bag_add_item(PLAYER_BAG_ITEMS, item, 1);
 		scr_play_sound(snd_collect, 0);

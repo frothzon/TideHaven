@@ -1,3 +1,3 @@
 /// @description load
 
-scr_roomStartLoadState();
+if(CURRENT_AREA == AREA_OVERWORLD) scr_roomStartLoadState();

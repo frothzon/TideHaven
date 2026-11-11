@@ -6,8 +6,37 @@ if(fishing_cooldown > 0) fishing_cooldown--;
 
 /// One menu view owns the controls at a time. P: inventory, M: world map, B: skills.
 if(keyboard_check(vk_control) && keyboard_check_pressed(ord("S"))){
-	scr_roomEndSaveState();
+	if(CURRENT_AREA == AREA_OVERWORLD) scr_roomEndSaveState();
 	if(scr_save_game()) scr_show_text_float(x, y - 20, "Game saved", c_lime);
+}
+
+if(CURRENT_AREA == AREA_OVERWORLD && MENU_VIEW == MENU_VIEW_GAME && !GAME_PAUSED && !global.CONFIG.housing_template_active && keyboard_check(vk_control)){
+	if(keyboard_check_pressed(ord("H"))){
+		if(!scr_capture_housing_template(x, y)) scr_show_text_float(x, y - 20, "No placed house pieces nearby", c_yellow);
+	} else if(keyboard_check_pressed(ord("J"))){
+		var _template_count = array_length(global.CONFIG.housing_templates);
+		if(_template_count > 0){
+			global.CONFIG.housing_template_index = (global.CONFIG.housing_template_index + 1) mod _template_count;
+			var _template = global.CONFIG.housing_templates[global.CONFIG.housing_template_index];
+			scr_show_text_float(x, y - 20, "Selected " + _template.name, c_aqua);
+		}
+	} else if(keyboard_check_pressed(ord("T"))){
+		var _template_count = array_length(global.CONFIG.housing_templates);
+		if(_template_count > 0){
+			var _index = clamp(global.CONFIG.housing_template_index, 0, _template_count - 1);
+			var _template = global.CONFIG.housing_templates[_index];
+			if(is_array(scr_housing_template_costs(_template, PLAYER_BAG_ITEMS))){
+				var _preview = instance_create_depth(mouse_x, mouse_y, 0, obj_builder_floor);
+				_preview.housing_template_preview = true;
+				_preview.template_index = _index;
+				_preview.item = -1;
+				_preview.mode = 0;
+				global.CONFIG.housing_template_active = true;
+			} else {
+				scr_show_text_float(x, y - 20, "Need the saved house pieces in your inventory", c_yellow);
+			}
+		}
+	}
 }
 
 if(!GAME_PAUSED){

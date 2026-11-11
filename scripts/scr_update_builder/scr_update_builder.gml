@@ -1,6 +1,6 @@
 // Script assets have changed for v2.3.0 see
 // https://help.yoyogames.com/hc/en-us/articles/360005277377 for more information
-function scr_update_builder(collide_obj, req_collision, player_can_block, isfloor=0, override=undefined){
+function scr_update_builder(collide_obj, req_collision, player_can_block, isfloor=0, override=undefined, surface_mode="land"){
 	if(mode == 0){
 		if(GAME_PAUSED == false) GAME_PAUSED = true;
 		x = (((mouse_x) >> 4) << 4) + 8;
@@ -33,7 +33,19 @@ function scr_update_builder(collide_obj, req_collision, player_can_block, isfloo
 			collide = override;	
 		}
 	
-		if(!scr_tile_at_position(xmid,ymid,"lay_sand") || collide){
+		var _surface_ok = scr_tile_at_position(xmid, ymid, "lay_sand");
+		if(surface_mode == "water"){
+			var _sand_layer = layer_get_id("lay_sand");
+			var _wall_layer = layer_get_id("lay_walls");
+			if(_sand_layer >= 0 && _wall_layer >= 0){
+				var _sand_map = layer_tilemap_get_id(_sand_layer);
+				var _wall_map = layer_tilemap_get_id(_wall_layer);
+				_surface_ok = tilemap_get_at_pixel(_sand_map, xmid, ymid) <= 0 && tilemap_get_at_pixel(_wall_map, xmid, ymid) > 0;
+			} else {
+				_surface_ok = false;
+			}
+		}
+		if(!_surface_ok || collide){
 			is_safe = false;	
 		}
 	

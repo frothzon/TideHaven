@@ -3,5 +3,4 @@ Tidehaven implementation backlog
 The current baseline, feature status, implementation order, and acceptance criteria are maintained in:
 notes/TIdehaven TODO/TIdehaven TODO.txt
 
-Completed milestones: unified menu state; starter tools, healing potions, simple fishing, and sword chest progression. Checked in GameMaker IDE.
-Next milestone: build a guided starting region, short playable dungeon, shrine reward, and return path.
+Completed and build-checked milestones: unified menus, starter item progression, visible skill tree, versioned saves, guided cave/shrine scene, independent terrain biomes, and the bridge/house-template implementation. The cave route and bridge/template interactions still need playthrough checks. See `notes/TIdehaven TODO/TIdehaven TODO.txt` for the detailed status and acceptance criteria.

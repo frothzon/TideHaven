@@ -19,9 +19,9 @@ exp_amount = scr_set_statvar(0,"EXP", 100);
 */
 
 var _layer = layer_get_id("Walls");
-layer_set_visible(_layer, false);
+if(_layer >= 0) layer_set_visible(_layer, false);
 _layer = layer_get_id("Climb");
-layer_set_visible(_layer, false);
+if(_layer >= 0) layer_set_visible(_layer, false);
 
 /// keep track of states using switch case statements
 scr_setup_state_machine();
